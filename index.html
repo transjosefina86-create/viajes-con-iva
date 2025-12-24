@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Viajes con IVA - Logística</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; --border: #e2e8f0; --green: #16a34a; --red: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
+        #bloqueo { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 9999; color: white; flex-direction: column; }
+        .pin-input { padding: 15px; font-size: 24px; text-align: center; border-radius: 8px; border: none; width: 200px; margin-top: 15px; background: #1e293b; color: white; letter-spacing: 5px; }
+        #side { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        #main { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        #calc { width: 340px; background: white; border-left: 1px solid var(--border); padding: 20px; flex-shrink: 0; }
+        .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; }
+        .chofer-item { padding: 12px; margin: 5px 10px; background: #1e293b; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .chofer-item.active { background: var(--blue); }
+        .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .field input, .field select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th { background: #f8fafc; padding: 12px; border-bottom: 2px solid var(--border); color: #475569; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        .btn-save { background: var(--green); color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+
+<div id="bloqueo">
+    <h2>VIAJES CON IVA</h2>
+    <p>Ingrese clave de acceso</p>
+    <input type="password" id="passInput" class="pin-input" placeholder="****">
+    <button onclick="verificar()" style="margin-top:20px; padding:12px 30px; background:var(--blue); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">ENTRAR</button>
+</div>
+
+<div id="appBody" style="display: none; width: 100%; height: 100%;">
+    <div id="side" class="no-print">
+        <div class="brand">LOGÍSTICA MASTER</div>
+        <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
+        <div style="padding: 15px; border-top: 1px solid #1e293b;">
+            <button class="btn-save" style="margin:0;" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
+        </div>
+    </div>
+
+    <div id="main">
+        <div id="secChofer" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h1 id="txtNombre" style="margin:0;"></h1>
+                <button class="btn-save" style="background:#475569; width:auto;" onclick="window.print()">📄 PDF / IMPRIMIR</button>
+            </div>
+            
+            <div class="card no-print">
+                <div class="input-row">
+                    <div class="field"><label>Fecha</label><input type="date" id="fFecha"></div>
+                    <div class="field"><label>Detalle</label><input type="text" id="fDetalle" style="width:250px" placeholder="Ruta o carga"></div>
+                    <div class="field"><label>Tipo</label>
+                        <select id="fTipo">
+                            <option value="Carga">VIAJE (Con IVA)</option>
+                            <option value="Adelanto">ADELANTO</option>
+                            <option value="Gasoil">GASOIL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row" style="margin-top:10px">
+                    <div class="field"><label>TN</label><input type="number" id="fTn" style="width:80px"></div>
+                    <div class="field"><label>Tarifa</label><input type="number" id="fTarifa" style="width:100px"></div>
+                    <div class="field"><label>Com %</label><input type="number" id="fComi" style="width:80px"></div>
+                    <button class="btn-save" style="width:auto" onclick="guardar()">GUARDAR REGISTRO</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:0;">
+                <table>
+                    <thead>
+                        <tr><th>Sel</th><th>Fecha</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>IVA (21%)</th><th>Total</th><th class="no-print">X</th></tr>
+                    </thead>
+                    <tbody id="tablaViajes"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CONFIGURACIÓN DE TU FIREBASE (Sacada de tus fotos)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLBvSUo8NemdYL_zgP0Fo-tg8aLiggqgQ",
+        authDomain: "viajes-con-iva.firebaseapp.com",
+        databaseURL: "https://viajes-con-iva-default-rtdb.firebaseio.com",
+        projectId: "viajes-con-iva",
+        storageBucket: "viajes-con-iva.firebasestorage.app",
+        messagingSenderId: "659354481888",
+        appId: "1:659354481888:web:faec78a76d6fcb674d4c85"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('db_viajes_iva');
+    let db = { choferes: [] };
+    let act = null;
+
+    dbRef.on('value', (s) => { if(s.val()){ db = s.val(); renderLista(); if(act!==null) renderTabla(); } });
+
+    function verificar() { if(document.getElementById('passInput').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('appBody').style.display='flex'; } }
+    function salvar() { dbRef.set(db); }
+    function nuevoChofer() { let n = prompt("Nombre del Chofer:"); if(n){ if(!db.choferes) db.choferes=[]; db.choferes.push({nombre:n.toUpperCase(), viajes:[]}); salvar(); } }
+    function seleccionar(i) { act = i; document.getElementById('secChofer').style.display='block'; document.getElementById('txtNombre').innerText=db.choferes[i].nombre; renderTabla(); renderLista(); }
+
+    function guardar() {
+        if(act === null) return;
+        let tipo = document.getElementById('fTipo').value;
+        let tn = parseFloat(document.getElementById('fTn').value) || 0;
+        let tr = parseFloat(document.getElementById('fTarifa').value) || 0;
+        let co = parseFloat(document.getElementById('fComi').value) || 0;
+        
+        let neto = (tn * tr) * (1 - (co/100));
+        let iva = (tipo === 'Carga') ? (neto * 0.21) : 0;
+        let total = (tipo === 'Carga') ? (neto + iva) : (parseFloat(prompt("Monto del " + tipo + ":")) || 0);
+
+        if(!db.choferes[act].viajes) db.choferes[act].viajes = [];
+        db.choferes[act].viajes.push({
+            fecha: document.getElementById('fFecha').value,
+            detalle: document.getElementById('fDetalle').value || '-',
+            tipo, tn, tarifa: tr, comi: co, neto, iva, total
+        });
+        salvar();
+        ['fDetalle','fTn','fTarifa','fComi'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    function renderTabla() {
+        let b = document.getElementById('tablaViajes'); b.innerHTML = '';
+        if(!db.choferes[act].viajes) return;
+        db.choferes[act].viajes.forEach((v, i) => {
+            b.innerHTML += `<tr>
+                <td class="no-print"><input type="checkbox"></td>
+                <td>${v.fecha}</td><td>${v.tipo !== 'Carga' ? '<b>['+v.tipo+']</b> ' : ''}${v.detalle}</td>
+                <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
+                <td>$${Math.round(v.neto).toLocaleString()}</td><td>$${Math.round(v.iva).toLocaleString()}</td>
+                <td><b>$${Math.round(v.total).toLocaleString()}</b></td>
+                <td class="no-print"><button onclick="borrar(${i})" style="color:red; border:none; background:none; cursor:pointer;">✖</button></td>
+            </tr>`;
+        });
+    }
+
+    function renderLista() {
+        let l = document.getElementById('listaChoferes'); l.innerHTML = '';
+        if(!db.choferes) return;
+        db.choferes.forEach((c, i) => {
+            l.innerHTML += `<div class="chofer-item ${act === i ? 'active' : ''}" onclick="seleccionar(${i})">${c.nombre}</div>`;
+        });
+    }
+
+    function borrar(i) { if(confirm("¿Borrar registro?")) { db.choferes[act].viajes.splice(i,1); salvar(); } }
+</script>
+</body>
+</html>
