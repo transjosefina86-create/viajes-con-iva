@@ -2,78 +2,80 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LOGISTICA MASTER PRO v26</title>
+    <title>LOGISTICA MASTER PRO v27</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; --border: #e2e8f0; --green: #16a34a; --orange: #f59e0b; --red: #ef4444; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Pantalla de Bloqueo Obligatoria */
         #bloqueo { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 10000; color: white; flex-direction: column; }
         .pin-input { padding: 15px; font-size: 24px; text-align: center; border-radius: 8px; border: none; width: 220px; margin: 20px 0; background: #1e293b; color: white; letter-spacing: 5px; outline: none; border: 2px solid #334155; }
 
-        #side { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        #main { flex-grow: 1; padding: 20px; overflow-y: auto; background: var(--bg); }
-        #calc { width: 320px; background: white; border-left: 1px solid var(--border); padding: 20px; flex-shrink: 0; display: flex; flex-direction: column; }
+        #side { width: 210px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        #main { flex-grow: 1; padding: 15px; overflow-y: auto; background: var(--bg); }
+        
+        /* PANEL DERECHO MÁS CHICO */
+        #calc { width: 250px; background: white; border-left: 1px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; font-size: 12px; }
 
-        .brand { padding: 25px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 18px; }
-        .chofer-item { display: flex; align-items: center; width: 90%; margin: 8px 5%; background: #1e293b; border-radius: 8px; }
+        .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 16px; }
+        .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; }
         .chofer-item.active { background: var(--blue); }
-        .menu-btn-chofer { flex-grow: 1; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-weight: 500; }
-        .del-chofer { padding: 10px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; }
+        .menu-btn-chofer { flex-grow: 1; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; }
         
-        .menu-btn { width: 90%; margin: 5px 5%; padding: 12px; background: #334155; border: none; color: white; border-radius: 8px; cursor: pointer; text-align: left; font-weight: bold; }
+        .menu-btn { width: 90%; margin: 5px 5%; padding: 10px; background: #334155; border: none; color: white; border-radius: 8px; cursor: pointer; text-align: left; font-size: 12px; }
 
-        .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .input-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 15px; }
-        .field { display: flex; flex-direction: column; gap: 5px; }
-        .field label { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; }
-        .field input, .field select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
-
-        #fFecha { width: 140px; }
-        #fFactura { width: 100px; }
-        #fDetalle { width: 220px; }
-        #fTn, #fTarifa, #fComi, #fMonto, #fLts { width: 95px; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f1f5f9; padding: 12px; border-bottom: 2px solid var(--border); color: #475569; text-align: center; }
-        td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-
-        .btn-save { background: var(--green); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; }
-        .resumen-box { padding: 20px; border-radius: 12px; border: 2px solid var(--border); background: white; }
-        .resumen-box h3 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--blue); padding-bottom: 10px; }
-        .resumen-box p { font-size: 16px; margin: 10px 0; display: flex; justify-content: space-between; }
-
-        .liq-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 12px; }
+        .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 10px; }
         
-        @media print { .no-print { display: none !important; } #main { width: 100%; padding: 0; } body { background: white; } }
+        /* FOCO CON COLOR AL USAR ENTER */
+        .field { display: flex; flex-direction: column; gap: 3px; }
+        .field label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        .field input:focus, .field select:focus { border-color: var(--blue); background-color: #eff6ff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .field input, .field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; transition: all 0.2s; }
+
+        #fFecha { width: 125px; }
+        #fFactura { width: 90px; }
+        #fDetalle { width: 180px; }
+        #fTn, #fTarifa, #fComi, #fMonto, #fLts { width: 85px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #f1f5f9; padding: 10px; border-bottom: 2px solid var(--border); color: #475569; }
+        td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+
+        .btn-save { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        .resumen-box { padding: 15px; border-radius: 10px; border: 1px solid var(--border); background: white; }
+        .liq-item { display: flex; flex-direction: column; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+        .liq-val { display: flex; justify-content: space-between; font-weight: bold; }
+        .liq-comi { font-size: 9px; color: var(--orange); }
+
+        @media print { .no-print { display: none !important; } #main { width: 100%; } }
     </style>
 </head>
 <body>
 
 <div id="bloqueo">
-    <h1 style="margin:0;">LOGÍSTICA MASTER</h1>
-    <p style="color: #94a3b8;">SISTEMA DE GESTIÓN DE FLOTA</p>
-    <input type="password" id="passInput" class="pin-input" placeholder="CLAVE" autofocus>
-    <button onclick="verificar()" class="btn-save" style="width:220px; background: var(--blue);">ENTRAR AL SISTEMA</button>
+    <h1>LOGÍSTICA MASTER</h1>
+    <input type="password" id="passInput" class="pin-input" placeholder="****">
+    <button onclick="verificar()" class="btn-save" style="width:220px; background: var(--blue);">ENTRAR</button>
 </div>
 
 <div id="appBody" style="display: none; width: 100%; height: 100%;">
     <div id="side" class="no-print">
         <div class="brand">LOGÍSTICA PRO</div>
-        <button class="menu-btn" onclick="verResumen()" style="background: #1e293b; border: 1px solid #334155;">📊 TOTALES GENERALES</button>
+        <button class="menu-btn" onclick="verResumen()">📊 TOTALES GENERALES</button>
         <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
         <div style="padding: 15px; border-top: 1px solid #1e293b;">
-            <button class="menu-btn" style="width: 100%; margin: 0; background: var(--blue);" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
+            <button class="menu-btn" style="width: 100%; margin: 0; background: var(--blue);" onclick="nuevoChofer()">+ NUEVO</button>
         </div>
     </div>
 
     <div id="main">
         <div id="secChofer" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h1 id="txtNombre" style="margin:0; color: var(--dark);"></h1>
-                <button class="menu-btn" style="width:auto; background:#475569;" onclick="window.print()">📄 GENERAR PDF</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 id="txtNombre" style="margin:0;"></h2>
+                <button class="menu-btn" style="width:auto; background:#475569; margin:0;" onclick="window.print()">📄 PDF</button>
             </div>
             
             <div class="card no-print">
@@ -81,29 +83,27 @@
                 <div class="input-row">
                     <div class="field"><label>Fecha</label><input type="date" id="fFecha" class="nav"></div>
                     <div class="field"><label>Factura</label><input type="text" id="fFactura" class="nav"></div>
-                    <div class="field"><label>Detalle / Ruta</label><input type="text" id="fDetalle" class="nav"></div>
+                    <div class="field"><label>Detalle</label><input type="text" id="fDetalle" class="nav"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="fTipo" class="nav" onchange="toggleLts()">
-                            <option value="Carga">VIAJE (Carga)</option>
+                            <option value="Carga">VIAJE</option>
                             <option value="Adelanto">ADELANTO</option>
                             <option value="Gasoil">GASOIL</option>
                         </select>
                     </div>
-                    <div class="field" id="fieldLts" style="display:none;"><label>Litros</label><input type="number" id="fLts" class="nav"></div>
-                </div>
-                <div class="input-row">
+                    <div class="field" id="fieldLts" style="display:none;"><label>Lts</label><input type="number" id="fLts" class="nav"></div>
                     <div class="field"><label>TN</label><input type="number" id="fTn" class="nav" step="0.01"></div>
                     <div class="field"><label>Tarifa</label><input type="number" id="fTarifa" class="nav"></div>
-                    <div class="field"><label>Comisión %</label><input type="number" id="fComi" class="nav" value="0"></div>
+                    <div class="field"><label>Comi %</label><input type="number" id="fComi" class="nav" placeholder="0"></div>
                     <div class="field"><label>Importe $</label><input type="number" id="fMonto" class="nav"></div>
                 </div>
                 <button class="btn-save" onclick="guardar()">GUARDAR REGISTRO (ENTER)</button>
             </div>
 
-            <div class="card" style="padding:0; overflow: hidden;">
+            <div class="card" style="padding:0;">
                 <table>
                     <thead>
-                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total (+IVA)</th><th class="no-print">Acción</th></tr>
+                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print"></th></tr>
                     </thead>
                     <tbody id="tablaViajes"></tbody>
                 </table>
@@ -111,38 +111,35 @@
         </div>
 
         <div id="secResumen" style="display:none;">
-            <h1 style="color: var(--dark);">Resumen de Facturación Flota</h1>
+            <h2>Totales de Flota</h2>
             <div class="card no-print">
                 <div class="input-row">
                     <div class="field"><label>Desde</label><input type="date" id="rDesde"></div>
                     <div class="field"><label>Hasta</label><input type="date" id="rHasta"></div>
-                    <button class="menu-btn" style="background: var(--blue); width: auto; margin:0;" onclick="generarBalanceGeneral()">CALCULAR SUMATORIAS</button>
+                    <button class="menu-btn" style="background: var(--blue); width: auto; margin:0;" onclick="generarBalanceGeneral()">CALCULAR</button>
                 </div>
             </div>
-            <div id="areaTotales" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                </div>
+            <div id="areaTotales" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;"></div>
         </div>
     </div>
 
     <div id="calc" class="no-print">
-        <div style="background: #1e293b; color: white; padding: 20px; border-radius: 12px; text-align: center;">
-            <small style="color:#60a5fa; font-weight: bold;">SELECCIÓN ACTUAL</small>
-            <h2 id="valPago" style="margin: 10px 0; font-size: 28px; color: #fff;">$ 0</h2>
+        <div style="background: #1e293b; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+            <small>SELECCIONADO</small>
+            <h2 id="valPago" style="margin: 5px 0; font-size: 22px;">$ 0</h2>
         </div>
-        <div id="detalleSeleccion" style="flex-grow: 1; margin-top: 20px; overflow-y: auto;">
-            <h4 style="font-size: 11px; border-bottom: 2px solid var(--blue); padding-bottom: 5px; color: var(--dark); text-transform: uppercase;">Detalle de ítems</h4>
+        <div style="flex-grow: 1; margin-top: 15px; overflow-y: auto;">
             <div id="liqcuerpo"></div>
         </div>
-        <div style="border-top: 2px solid var(--border); padding-top: 15px;">
-            <div style="display:flex; justify-content:space-between; font-size: 15px; font-weight: 800; color: var(--blue);">
-                <span>SALDO TOTAL:</span> <span id="stTotal">$ 0</span>
+        <div style="border-top: 1px solid var(--border); padding-top: 10px;">
+            <div style="display:flex; justify-content:space-between; font-weight: bold; color: var(--blue);">
+                <span>SALDO:</span> <span id="stTotal">$ 0</span>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyCLBvSUo8NemdYL_zgP0Fo-tg8aLiggqgQ",
         authDomain: "viajes-con-iva.firebaseapp.com",
@@ -158,18 +155,13 @@
     let db = { choferes: [] };
     let act = null;
 
-    // Bloqueo
     function verificar() {
         if(document.getElementById('passInput').value === "1234") {
             document.getElementById('bloqueo').style.display='none';
             document.getElementById('appBody').style.display='flex';
-        } else { alert("Clave Incorrecta"); }
+        } else { alert("Error"); }
     }
 
-    // Enter para la clave
-    document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') verificar(); });
-
-    // Sincronizar
     dbRef.on('value', (s) => {
         db = s.val() || { choferes: [] };
         renderLista();
@@ -183,7 +175,7 @@
         let l = document.getElementById('listaChoferes'); l.innerHTML = '';
         if(!db.choferes) return;
         db.choferes.forEach((c, i) => {
-            l.innerHTML += `<div class="chofer-item ${act === i ? 'active' : ''}"><button class="menu-btn-chofer" onclick="seleccionar(${i})">${c.nombre}</button><button class="del-chofer" onclick="borrarChofer(${i})">🗑️</button></div>`;
+            l.innerHTML += `<div class="chofer-item ${act === i ? 'active' : ''}"><button class="menu-btn-chofer" onclick="seleccionar(${i})">${c.nombre}</button></div>`;
         });
     }
 
@@ -226,20 +218,16 @@
             let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
             let totalFila = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
             sT += totalFila;
-            let det = v.tipo === 'Carga' ? v.detalle : `<b>[${v.tipo.toUpperCase()}]</b> ${v.lts?v.lts+'Lts ':''} ${v.detalle}`;
             body.innerHTML += `<tr>
                 <td class="no-print"><input type="checkbox" class="chk" data-idx="${i}" onchange="calcPago()"></td>
                 <td>${v.fecha.split('-').reverse().join('/')}</td>
                 <td>${v.factura}</td>
-                <td style="text-align:left">${det}</td>
+                <td style="text-align:left">${v.detalle}</td>
                 <td><button class="status-pill ${v.estado === 'Pagado' ? 'pill-pagado' : 'pill-pend'}" onclick="toggleEstado(${i})">${v.estado}</button></td>
                 <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
                 <td>$${Math.round(neto).toLocaleString()}</td>
                 <td style="font-weight:bold; color:${totalFila<0?'red':'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
-                <td class="no-print">
-                    <button style="border:none; background:none; cursor:pointer;" onclick="editar(${i})">✎</button>
-                    <button style="border:none; background:none; cursor:pointer;" onclick="borrarViaje(${i})">✖</button>
-                </td>
+                <td class="no-print"><button style="border:none; background:none; cursor:pointer;" onclick="editar(${i})">✎</button></td>
             </tr>`;
         });
         document.getElementById('stTotal').innerText = `$ ${Math.round(sT).toLocaleString()}`;
@@ -250,57 +238,39 @@
         let cuerpo = document.getElementById('liqcuerpo');
         let total = 0; cuerpo.innerHTML = '';
         let sel = document.querySelectorAll('.chk:checked');
-        if(sel.length === 0) { cuerpo.innerHTML = '<p style="color:#94a3b8; font-size: 11px; text-align: center; margin-top:20px;">Sin ítems marcados</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
+        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; margin-top:20px;">Marcar para liquidar</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
         sel.forEach(chk => {
             let v = db.choferes[act].viajes[chk.dataset.idx];
             let n = (v.tn * v.tarifa) * (1 - (v.comi/100));
+            let bruto = (v.tn * v.tarifa);
             let valor = (v.tipo === 'Carga') ? (n * 1.21) : -v.monto;
             total += valor;
-            cuerpo.innerHTML += `<div class="liq-item"><span>${v.detalle.substring(0,15)}</span><b style="color:${valor<0?'red':'green'}">$${Math.round(Math.abs(valor)).toLocaleString()}</b></div>`;
+            
+            let comiTexto = (v.tipo === 'Carga' && v.comi > 0) ? `<span class="liq-comi">Desc %${v.comi}: -$${Math.round(bruto - n).toLocaleString()}</span>` : '';
+            
+            cuerpo.innerHTML += `
+                <div class="liq-item">
+                    <div class="liq-val"><span>${v.detalle.substring(0,12)}</span><span style="color:${valor<0?'red':'green'}">$${Math.round(Math.abs(valor)).toLocaleString()}</span></div>
+                    ${comiTexto}
+                </div>`;
         });
         document.getElementById('valPago').innerText = `$ ${Math.round(total).toLocaleString()}`;
     }
 
     function generarBalanceGeneral() {
-        let d = document.getElementById('rDesde').value;
-        let h = document.getElementById('rHasta').value;
-        if(!d || !h) { alert("Seleccione fechas"); return; }
-        
-        let sumaNetoConComi = 0;
-        let sumaNetoSinComi = 0;
-
-        db.choferes.forEach(c => { 
-            if(c.viajes) { 
-                c.viajes.forEach(v => { 
-                    if(v.fecha >= d && v.fecha <= h && v.tipo === 'Carga') { 
-                        sumaNetoConComi += (v.tn * v.tarifa) * (1 - (v.comi/100)); 
-                        sumaNetoSinComi += (v.tn * v.tarifa); 
-                    } 
-                }); 
-            } 
-        });
-
-        const crearBox = (titulo, neto) => `
-            <div class="resumen-box">
-                <h3>${titulo}</h3>
-                <p><span>Subtotal Neto:</span> <span>$${Math.round(neto).toLocaleString()}</span></p>
-                <p><span>IVA (21%):</span> <span>$${Math.round(neto * 0.21).toLocaleString()}</span></p>
-                <hr>
-                <p style="font-weight:bold; font-size:20px; color:var(--blue);"><span>TOTAL:</span> <span>$${Math.round(neto * 1.21).toLocaleString()}</span></p>
-            </div>`;
-
-        document.getElementById('areaTotales').innerHTML = 
-            crearBox("LIQUIDACIÓN (Con Comisión)", sumaNetoConComi) + 
-            crearBox("FACTURACIÓN (Sin Comisión)", sumaNetoSinComi);
+        let d = document.getElementById('rDesde').value, h = document.getElementById('rHasta').value;
+        if(!d || !h) return;
+        let nCon = 0, nSin = 0;
+        db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.fecha >= d && v.fecha <= h && v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } });
+        const box = (t, n) => `<div class="resumen-box"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`;
+        document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (-Comi)", nCon) + box("FACTURACIÓN (Total)", nSin);
     }
 
     function toggleEstado(i) { db.choferes[act].viajes[i].estado = db.choferes[act].viajes[i].estado === 'Pendiente' ? 'Pagado' : 'Pendiente'; salvar(); }
-    function limpiar() { ['fFactura','fDetalle','fTn','fTarifa','fComi','fMonto','fLts'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fFecha').value = hoy(); document.getElementById('fTipo').value = 'Carga'; document.getElementById('fComi').value = "0"; document.getElementById('editIdx').value = '-1'; toggleLts(); }
+    function limpiar() { ['fFactura','fDetalle','fTn','fTarifa','fComi','fMonto','fLts'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fFecha').value = hoy(); document.getElementById('fTipo').value = 'Carga'; document.getElementById('editIdx').value = '-1'; toggleLts(); }
     function editar(i) { let v = db.choferes[act].viajes[i]; document.getElementById('fFecha').value = v.fecha; document.getElementById('fFactura').value = v.factura; document.getElementById('fDetalle').value = v.detalle; document.getElementById('fTipo').value = v.tipo; document.getElementById('fTn').value = v.tn; document.getElementById('fTarifa').value = v.tarifa; document.getElementById('fComi').value = v.comi; document.getElementById('fMonto').value = v.monto; document.getElementById('fLts').value = v.lts || ''; document.getElementById('editIdx').value = i; toggleLts(); }
-    function borrarViaje(i) { if(confirm("¿Eliminar registro?")) { db.choferes[act].viajes.splice(i,1); salvar(); } }
-    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; document.getElementById('areaTotales').innerHTML = ''; renderLista(); }
-    function nuevoChofer() { let n = prompt("Nombre del Chofer:"); if(n) { if(!db.choferes) db.choferes = []; db.choferes.push({nombre: n.toUpperCase(), viajes: []}); salvar(); } }
-    function borrarChofer(i) { if(confirm(`¿Eliminar a ${db.choferes[i].nombre}?`)) { db.choferes.splice(i, 1); act = null; salvar(); document.getElementById('secChofer').style.display = 'none'; } }
+    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; }
+    function nuevoChofer() { let n = prompt("Nombre:"); if(n) { if(!db.choferes) db.choferes = []; db.choferes.push({nombre: n.toUpperCase(), viajes: []}); salvar(); } }
 
     document.addEventListener('keydown', (e) => {
         if(e.key === 'Enter') {
