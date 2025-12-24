@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LOGISTICA MASTER PRO v30</title>
+    <title>LOGISTICA MASTER PRO v31</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -12,46 +12,48 @@
         #bloqueo { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 10000; color: white; flex-direction: column; }
         .pin-input { padding: 15px; font-size: 24px; text-align: center; border-radius: 8px; border: none; width: 220px; margin: 20px 0; background: #1e293b; color: white; letter-spacing: 5px; outline: none; border: 2px solid #334155; }
 
-        #side { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        #side { width: 210px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         #main { flex-grow: 1; padding: 15px; overflow-y: auto; background: var(--bg); }
-        #calc { width: 300px; background: white; border-left: 2px solid var(--border); padding: 20px; flex-shrink: 0; display: flex; flex-direction: column; }
-
-        .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 16px; }
-        .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; padding-right: 8px; }
-        .chofer-item.active { background: var(--blue); }
-        .menu-btn-chofer { flex-grow: 1; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; }
-        .btn-del-chofer { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 5px; transition: 0.2s; }
-        .btn-del-chofer:hover { color: var(--red); }
         
-        .menu-btn { width: 90%; margin: 5px 5%; padding: 10px; background: #334155; border: none; color: white; border-radius: 8px; cursor: pointer; text-align: left; font-size: 12px; }
+        /* SECCIÓN LIQUIDAR MÁS CHICA */
+        #calc { width: 260px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
+
+        .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 15px; }
+        .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; }
+        .chofer-item.active { background: var(--blue); }
+        .menu-btn-chofer { flex-grow: 1; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; }
+        .btn-del-chofer { background: none; border: none; color: #64748b; cursor: pointer; padding: 5px; }
 
         .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 10px; }
         
         .field { display: flex; flex-direction: column; gap: 3px; }
         .field label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-        .field input, .field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
+        .field input, .field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; transition: 0.2s; }
+        .field input:focus { border-color: var(--blue); background: #eff6ff; }
 
-        #fFecha { width: 125px; }
-        #fFactura { width: 90px; }
-        #fDetalle { width: 180px; }
-        #fTn, #fTarifa, #fComi, #fMonto, #fLts { width: 85px; }
+        #fFecha { width: 120px; }
+        #fFactura { width: 85px; }
+        #fDetalle { width: 170px; }
+        #fTn, #fTarifa, #fComi, #fMonto, #fLts { width: 80px; }
 
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { background: #f1f5f9; padding: 10px; border-bottom: 2px solid var(--border); color: #475569; }
         td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; }
 
+        /* Etiquetas de tipo en la tabla */
+        .badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
+        .bg-adelanto { background: #fef3c7; color: #92400e; }
+        .bg-gasoil { background: #dcfce7; color: #166534; }
+        .bg-pago { background: #e0e7ff; color: #3730a3; }
         .desc-pct { display: block; font-size: 10px; color: var(--orange); font-weight: bold; margin-top: 2px; }
 
         .btn-save { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         
-        /* Estilos Liquidación Derecha */
-        .liq-title { font-size: 14px; font-weight: 800; color: var(--dark); margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 5px; }
-        .liq-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .liq-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; }
-        .liq-sub { font-size: 11px; color: var(--orange); margin-top: 4px; font-weight: 600; }
-        .liq-tipo { font-size: 10px; text-transform: uppercase; color: #94a3b8; margin-bottom: 2px; display: block; }
-        .total-box { background: #1e293b; color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        /* Panel Liquidación */
+        .total-box { background: #1e293b; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .liq-item { padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+        .liq-header { display: flex; justify-content: space-between; font-weight: bold; }
 
         @media print { .no-print { display: none !important; } #main { width: 100%; } }
     </style>
@@ -66,11 +68,11 @@
 
 <div id="appBody" style="display: none; width: 100%; height: 100%;">
     <div id="side" class="no-print">
-        <div class="brand">LOGÍSTICA PRO v30</div>
-        <button class="menu-btn" onclick="verResumen()">📊 TOTALES GENERALES</button>
+        <div class="brand">LOGÍSTICA PRO</div>
+        <button class="menu-btn" style="width:90%; margin:5px 5%; padding:10px; background:#334155; color:white; border:none; border-radius:8px; cursor:pointer;" onclick="verResumen()">📊 TOTALES GENERALES</button>
         <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
         <div style="padding: 15px; border-top: 1px solid #1e293b;">
-            <button class="menu-btn" style="width: 100%; margin: 0; background: var(--blue);" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
+            <button class="btn-save" style="background: var(--blue);" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
         </div>
     </div>
 
@@ -78,7 +80,7 @@
         <div id="secChofer" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2 id="txtNombre" style="margin:0;"></h2>
-                <button class="menu-btn" style="width:auto; background:#475569; margin:0;" onclick="window.print()">📄 GENERAR PDF</button>
+                <button class="menu-btn" style="width:auto; background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px;" onclick="window.print()">📄 GENERAR PDF</button>
             </div>
             
             <div class="card no-print">
@@ -90,7 +92,7 @@
                     <div class="field"><label>Tipo</label>
                         <select id="fTipo" class="nav" onchange="toggleLts()">
                             <option value="Carga">VIAJE</option>
-                            <option value="Adelanto">ADELANTO</option>
+                            <option value="Adelanto">ADELANTO / PAGO</option>
                             <option value="Gasoil">GASOIL</option>
                         </select>
                     </div>
@@ -106,7 +108,7 @@
             <div class="card" style="padding:0;">
                 <table>
                     <thead>
-                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle / Comi</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print"></th></tr>
+                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle / Tipo</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print"></th></tr>
                     </thead>
                     <tbody id="tablaViajes"></tbody>
                 </table>
@@ -121,26 +123,21 @@
 
     <div id="calc" class="no-print">
         <div class="total-box">
-            <small style="text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Total a Liquidar</small>
-            <h2 id="valPago" style="margin: 5px 0; font-size: 28px; color: #60a5fa;">$ 0</h2>
+            <small>LIQUIDACIÓN ACTUAL</small>
+            <h2 id="valPago" style="margin: 5px 0; font-size: 24px; color: #60a5fa;">$ 0</h2>
         </div>
-        
-        <div class="liq-title">DETALLE SELECCIONADO</div>
-        
-        <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;">
+        <div style="flex-grow: 1; overflow-y: auto;">
             <div id="liqcuerpo"></div>
         </div>
-
-        <div style="border-top: 2px solid var(--bg); padding-top: 15px;">
-            <div style="display:flex; justify-content:space-between; font-weight: 800; font-size: 14px; color: var(--dark);">
-                <span>SALDO TOTAL:</span> <span id="stTotal">$ 0</span>
+        <div style="border-top: 1px solid var(--border); padding-top: 10px;">
+            <div style="display:flex; justify-content:space-between; font-weight: bold; font-size: 13px;">
+                <span>SALDO:</span> <span id="stTotal">$ 0</span>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Configuración e Inicialización ---
     const firebaseConfig = {
         apiKey: "AIzaSyCLBvSUo8NemdYL_zgP0Fo-tg8aLiggqgQ",
         authDomain: "viajes-con-iva.firebaseapp.com",
@@ -160,7 +157,7 @@
         if(document.getElementById('passInput').value === "1234") {
             document.getElementById('bloqueo').style.display='none';
             document.getElementById('appBody').style.display='flex';
-        } else { alert("PIN Incorrecto"); }
+        } else { alert("Error"); }
     }
 
     dbRef.on('value', (s) => {
@@ -172,7 +169,6 @@
     function salvar() { dbRef.set(db); }
     function hoy() { return new Date().toISOString().split('T')[0]; }
 
-    // --- Gestión de Choferes ---
     function renderLista() {
         let l = document.getElementById('listaChoferes'); l.innerHTML = '';
         if(!db.choferes) return;
@@ -180,27 +176,9 @@
             l.innerHTML += `
                 <div class="chofer-item ${act === i ? 'active' : ''}">
                     <button class="menu-btn-chofer" onclick="seleccionar(${i})">${c.nombre}</button>
-                    <button class="btn-del-chofer" onclick="borrarChofer(${i})" title="Borrar Chofer">🗑️</button>
+                    <button class="btn-del-chofer" onclick="borrarChofer(${i})">🗑️</button>
                 </div>`;
         });
-    }
-
-    function nuevoChofer() {
-        let n = prompt("Nombre del nuevo chofer:");
-        if(n) {
-            if(!db.choferes) db.choferes = [];
-            db.choferes.push({nombre: n.toUpperCase(), viajes: []});
-            salvar();
-        }
-    }
-
-    function borrarChofer(i) {
-        if(confirm(`¿Estás seguro de borrar a ${db.choferes[i].nombre}? Se perderán todos sus datos.`)) {
-            db.choferes.splice(i, 1);
-            if(act === i) { act = null; document.getElementById('secChofer').style.display = 'none'; }
-            else if(act > i) { act--; }
-            salvar();
-        }
     }
 
     function seleccionar(i) {
@@ -211,7 +189,6 @@
         limpiar(); renderTabla(); renderLista();
     }
 
-    // --- Gestión de Viajes ---
     function toggleLts() { document.getElementById('fieldLts').style.display = (document.getElementById('fTipo').value === 'Gasoil') ? 'block' : 'none'; }
 
     function guardar() {
@@ -239,25 +216,27 @@
         let body = document.getElementById('tablaViajes'); body.innerHTML = '';
         let sT = 0;
         if(!db.choferes[act].viajes) db.choferes[act].viajes = [];
-        db.choferes[act].viajes.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
-        
         db.choferes[act].viajes.forEach((v, i) => {
             let bruto = (v.tn * v.tarifa);
             let neto = bruto * (1 - (v.comi/100));
             let totalFila = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
             sT += totalFila;
 
+            let tag = "";
+            if(v.tipo === 'Adelanto') tag = '<span class="badge bg-adelanto">Adelanto/Pago</span>';
+            if(v.tipo === 'Gasoil') tag = '<span class="badge bg-gasoil">Gasoil</span>';
+            
             let pctTxt = (v.tipo === 'Carga' && v.comi > 0) ? `<span class="desc-pct">Comisión: ${v.comi}%</span>` : '';
             
             body.innerHTML += `<tr>
                 <td class="no-print"><input type="checkbox" class="chk" data-idx="${i}" onchange="calcPago()"></td>
                 <td>${v.fecha.split('-').reverse().join('/')}</td>
                 <td>${v.factura}</td>
-                <td style="text-align:left">${v.detalle}${pctTxt}</td>
-                <td><button style="padding: 4px 8px; border-radius: 20px; border: none; font-size: 10px; cursor: pointer; background: ${v.estado === 'Pagado' ? '#dcfce7' : '#fee2e2'}; color: ${v.estado === 'Pagado' ? '#166534' : '#991b1b'};" onclick="toggleEstado(${i})">${v.estado}</button></td>
+                <td style="text-align:left">${tag}${v.detalle}${pctTxt}</td>
+                <td><button style="border:none; border-radius:10px; padding:2px 8px; font-size:10px; cursor:pointer; background:${v.estado==='Pagado'?'#dcfce7':'#fee2e2'}" onclick="toggleEstado(${i})">${v.estado}</button></td>
                 <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
                 <td>$${Math.round(neto).toLocaleString()}</td>
-                <td style="font-weight:bold; color:${totalFila<0?'#ef4444':'#0f172a'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
+                <td style="font-weight:bold; color:${totalFila<0?'red':'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
                 <td class="no-print"><button style="border:none; background:none; cursor:pointer;" onclick="editar(${i})">✎</button></td>
             </tr>`;
         });
@@ -265,59 +244,35 @@
         calcPago();
     }
 
-    // --- Liquidación (Panel Derecho) ---
     function calcPago() {
         let cuerpo = document.getElementById('liqcuerpo');
         let total = 0; cuerpo.innerHTML = '';
         let sel = document.querySelectorAll('.chk:checked');
-        
-        if(sel.length === 0) { 
-            cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; margin-top:20px; font-size:13px;">Seleccioná viajes para liquidar</p>'; 
-            document.getElementById('valPago').innerText = '$ 0'; 
-            return; 
-        }
-
+        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcar para liquidar</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
         sel.forEach(chk => {
             let v = db.choferes[act].viajes[chk.dataset.idx];
             let bruto = (v.tn * v.tarifa);
             let n = bruto * (1 - (v.comi/100));
             let valor = (v.tipo === 'Carga') ? (n * 1.21) : -v.monto;
             total += valor;
-            
-            let detalleExtra = "";
-            if(v.tipo === 'Carga' && v.comi > 0) {
-                detalleExtra = `<span class="liq-sub">DESC %${v.comi}: -$${Math.round(bruto - n).toLocaleString()}</span>`;
-            } else if (v.tipo === 'Gasoil') {
-                detalleExtra = `<span class="liq-sub" style="color: #64748b;">${v.lts} Litros</span>`;
-            }
-
             cuerpo.innerHTML += `
                 <div class="liq-item">
-                    <span class="liq-tipo">${v.tipo}</span>
                     <div class="liq-header">
-                        <span>${v.detalle}</span>
-                        <span style="color:${valor<0?'var(--red)':'var(--green)'}">
-                            ${valor < 0 ? '-' : ''}$${Math.round(Math.abs(valor)).toLocaleString()}
-                        </span>
+                        <span>${v.detalle.substring(0,12)}</span>
+                        <span style="color:${valor<0?'red':'green'}">${valor<0?'-':''}$${Math.round(Math.abs(valor)).toLocaleString()}</span>
                     </div>
-                    ${detalleExtra}
+                    <small style="color:#94a3b8; font-size:9px;">${v.tipo}</small>
                 </div>`;
         });
         document.getElementById('valPago').innerText = `$ ${Math.round(total).toLocaleString()}`;
     }
 
-    // --- Utilidades ---
     function toggleEstado(i) { db.choferes[act].viajes[i].estado = db.choferes[act].viajes[i].estado === 'Pendiente' ? 'Pagado' : 'Pendiente'; salvar(); }
     function limpiar() { ['fFactura','fDetalle','fTn','fTarifa','fComi','fMonto','fLts'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fFecha').value = hoy(); document.getElementById('fTipo').value = 'Carga'; document.getElementById('editIdx').value = '-1'; toggleLts(); }
     function editar(i) { let v = db.choferes[act].viajes[i]; document.getElementById('fFecha').value = v.fecha; document.getElementById('fFactura').value = v.factura; document.getElementById('fDetalle').value = v.detalle; document.getElementById('fTipo').value = v.tipo; document.getElementById('fTn').value = v.tn; document.getElementById('fTarifa').value = v.tarifa; document.getElementById('fComi').value = v.comi; document.getElementById('fMonto').value = v.monto; document.getElementById('fLts').value = v.lts || ''; document.getElementById('editIdx').value = i; toggleLts(); }
-    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; generarBalanceGeneral(); }
-
-    function generarBalanceGeneral() {
-        let nCon = 0, nSin = 0;
-        db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } });
-        const box = (t, n) => `<div class="card"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`;
-        document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Real)", nCon) + box("FACTURACIÓN (Bruta)", nSin);
-    }
+    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; }
+    function nuevoChofer() { let n = prompt("Nombre:"); if(n) { if(!db.choferes) db.choferes = []; db.choferes.push({nombre: n.toUpperCase(), viajes: []}); salvar(); } }
+    function borrarChofer(i) { if(confirm("¿Borrar chofer?")) { db.choferes.splice(i,1); act=null; salvar(); } }
 
     document.addEventListener('keydown', (e) => {
         if(e.key === 'Enter') {
