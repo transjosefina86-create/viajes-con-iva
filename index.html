@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LOGISTICA MASTER PRO v32</title>
+    <title>LOGISTICA MASTER PRO v33</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -14,7 +14,7 @@
 
         #side { width: 210px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         #main { flex-grow: 1; padding: 15px; overflow-y: auto; background: var(--bg); }
-        #calc { width: 260px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
+        #calc { width: 270px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
 
         .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 15px; }
         .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; }
@@ -28,12 +28,6 @@
         .field { display: flex; flex-direction: column; gap: 3px; }
         .field label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
         .field input, .field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
-        .field input:focus, .field select:focus { border-color: var(--blue); background: #eff6ff; }
-
-        #fFecha { width: 120px; }
-        #fFactura { width: 85px; }
-        #fDetalle { width: 170px; }
-        #fTn, #fTarifa, #fComi, #fMonto, #fLts { width: 80px; }
 
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th { background: #f1f5f9; padding: 10px; border-bottom: 2px solid var(--border); color: #475569; }
@@ -43,7 +37,6 @@
         .bg-adelanto { background: #fef3c7; color: #92400e; }
         .bg-gasoil { background: #dcfce7; color: #166534; }
         .bg-pago { background: #e0e7ff; color: #3730a3; }
-        .desc-pct { display: block; font-size: 10px; color: var(--orange); font-weight: bold; margin-top: 2px; }
 
         .btn-save { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         .total-box { background: #1e293b; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
@@ -61,8 +54,8 @@
 
 <div id="appBody" style="display: none; width: 100%; height: 100%;">
     <div id="side" class="no-print">
-        <div class="brand">LOGÍSTICA PRO</div>
-        <button class="menu-btn" style="width:90%; margin:5px 5%; padding:10px; background:#334155; color:white; border:none; border-radius:8px; cursor:pointer;" onclick="verResumen()">📊 TOTALES GENERALES</button>
+        <div class="brand">LOGÍSTICA PRO v33</div>
+        <button onclick="verResumen()" style="width:90%; margin:5px 5%; padding:10px; background:#334155; color:white; border:none; border-radius:8px; cursor:pointer;">📊 TOTALES GENERALES</button>
         <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
         <div style="padding: 15px; border-top: 1px solid #1e293b;">
             <button class="btn-save" style="background: var(--blue);" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
@@ -73,7 +66,7 @@
         <div id="secChofer" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2 id="txtNombre" style="margin:0;"></h2>
-                <button class="menu-btn" style="width:auto; background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px;" onclick="window.print()">📄 GENERAR PDF</button>
+                <button onclick="window.print()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">📄 PDF</button>
             </div>
             
             <div class="card no-print">
@@ -81,7 +74,7 @@
                 <div class="input-row">
                     <div class="field"><label>Fecha</label><input type="date" id="fFecha" class="nav"></div>
                     <div class="field"><label>Factura</label><input type="text" id="fFactura" class="nav"></div>
-                    <div class="field"><label>Detalle</label><input type="text" id="fDetalle" class="nav"></div>
+                    <div class="field"><label>Detalle (Ref Pago)</label><input type="text" id="fDetalle" class="nav" placeholder="Ej: Pago Flete Oct"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="fTipo" class="nav" onchange="toggleLts()">
                             <option value="Carga">VIAJE</option>
@@ -110,20 +103,20 @@
         </div>
 
         <div id="secResumen" style="display:none;">
-            <h2>Totales de Flota (Cargas)</h2>
+            <h2>Resumen General de Cargas</h2>
             <div id="areaTotales" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;"></div>
         </div>
     </div>
 
     <div id="calc" class="no-print">
         <div class="total-box">
-            <small>LIQUIDACIÓN ACTUAL</small>
+            <small>LIQUIDACIÓN SELECCIONADA</small>
             <h2 id="valPago" style="margin: 5px 0; font-size: 24px; color: #60a5fa;">$ 0</h2>
         </div>
         <div style="flex-grow: 1; overflow-y: auto;" id="liqcuerpo"></div>
         <div style="border-top: 1px solid var(--border); padding-top: 10px;">
             <div style="display:flex; justify-content:space-between; font-weight: bold; font-size: 13px;">
-                <span>SALDO:</span> <span id="stTotal">$ 0</span>
+                <span>SALDO PENDIENTE:</span> <span id="stTotal">$ 0</span>
             </div>
         </div>
     </div>
@@ -145,19 +138,8 @@
     let db = { choferes: [] };
     let act = null;
 
-    function verificar() {
-        if(document.getElementById('passInput').value === "1234") {
-            document.getElementById('bloqueo').style.display='none';
-            document.getElementById('appBody').style.display='flex';
-        } else { alert("PIN Incorrecto"); }
-    }
-
-    dbRef.on('value', (s) => {
-        db = s.val() || { choferes: [] };
-        renderLista();
-        if(act !== null) renderTabla();
-    });
-
+    function verificar() { if(document.getElementById('passInput').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('appBody').style.display='flex'; } else { alert("PIN Incorrecto"); } }
+    dbRef.on('value', (s) => { db = s.val() || { choferes: [] }; renderLista(); if(act !== null) renderTabla(); });
     function salvar() { dbRef.set(db); }
     function hoy() { return new Date().toISOString().split('T')[0]; }
 
@@ -205,78 +187,72 @@
 
     function renderTabla() {
         let body = document.getElementById('tablaViajes'); body.innerHTML = '';
-        let sT = 0;
+        let saldoAcumulado = 0;
         if(!db.choferes[act].viajes) db.choferes[act].viajes = [];
+        
         db.choferes[act].viajes.forEach((v, i) => {
-            let bruto = (v.tn * v.tarifa);
-            let neto = bruto * (1 - (v.comi/100));
-            let totalFila = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
-            sT += totalFila;
-
+            let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
+            let totalFila = 0;
             let tag = "";
-            if(v.tipo === 'Adelanto') tag = '<span class="badge bg-adelanto">Adelanto</span>';
-            if(v.tipo === 'Gasoil') tag = '<span class="badge bg-gasoil">Gasoil</span>';
-            if(v.tipo === 'Pago') tag = '<span class="badge bg-pago">Pago</span>';
+
+            if(v.tipo === 'Carga') {
+                totalFila = neto * 1.21;
+            } else {
+                totalFila = -v.monto; // Gasoil, Adelanto y PAGO restan a la deuda
+                if(v.tipo === 'Adelanto') tag = '<span class="badge bg-adelanto">Adelanto</span>';
+                if(v.tipo === 'Gasoil') tag = '<span class="badge bg-gasoil">Gasoil</span>';
+                if(v.tipo === 'Pago') tag = '<span class="badge bg-pago">PAGO</span>';
+            }
             
-            let pctTxt = (v.tipo === 'Carga' && v.comi > 0) ? `<span class="desc-pct">Comisión: ${v.comi}%</span>` : '';
-            
+            saldoAcumulado += totalFila;
+            let pctTxt = (v.tipo === 'Carga' && v.comi > 0) ? `<br><small style="color:var(--orange)">Comisión: ${v.comi}%</small>` : '';
+
             body.innerHTML += `<tr>
                 <td class="no-print"><input type="checkbox" class="chk" data-idx="${i}" onchange="calcPago()"></td>
                 <td>${v.fecha.split('-').reverse().join('/')}</td>
                 <td>${v.factura}</td>
-                <td style="text-align:left">${tag}${v.detalle}${pctTxt}</td>
+                <td style="text-align:left">${tag} ${v.detalle}${pctTxt}</td>
                 <td><button style="border:none; border-radius:10px; padding:2px 8px; font-size:10px; cursor:pointer; background:${v.estado==='Pagado'?'#dcfce7':'#fee2e2'}" onclick="toggleEstado(${i})">${v.estado}</button></td>
                 <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
-                <td>$${Math.round(neto).toLocaleString()}</td>
-                <td style="font-weight:bold; color:${totalFila<0?'red':'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
+                <td>$${Math.round(neto || 0).toLocaleString()}</td>
+                <td style="font-weight:bold; color:${totalFila < 0 ? 'red' : 'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
                 <td class="no-print"><button style="border:none; background:none; cursor:pointer;" onclick="editar(${i})">✎</button></td>
             </tr>`;
         });
-        document.getElementById('stTotal').innerText = `$ ${Math.round(sT).toLocaleString()}`;
+        document.getElementById('stTotal').innerText = `$ ${Math.round(saldoAcumulado).toLocaleString()}`;
         calcPago();
     }
 
     function calcPago() {
         let cuerpo = document.getElementById('liqcuerpo');
-        let total = 0; cuerpo.innerHTML = '';
+        let totalSel = 0; cuerpo.innerHTML = '';
         let sel = document.querySelectorAll('.chk:checked');
-        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcar para liquidar</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
+        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcá para relacionar al Pago</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
+        
         sel.forEach(chk => {
             let v = db.choferes[act].viajes[chk.dataset.idx];
-            let bruto = (v.tn * v.tarifa);
-            let n = bruto * (1 - (v.comi/100));
-            let valor = (v.tipo === 'Carga') ? (n * 1.21) : -v.monto;
-            total += valor;
+            let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
+            let valor = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
+            totalSel += valor;
+            
             cuerpo.innerHTML += `
                 <div style="padding:8px 0; border-bottom:1px solid #f1f5f9;">
                     <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;">
-                        <span>${v.detalle.substring(0,14)}</span>
+                        <span>${v.detalle.substring(0,15)}</span>
                         <span style="color:${valor<0?'red':'green'}">${valor<0?'-':''}$${Math.round(Math.abs(valor)).toLocaleString()}</span>
                     </div>
                     <small style="color:#94a3b8; font-size:9px;">${v.tipo}</small>
                 </div>`;
         });
-        document.getElementById('valPago').innerText = `$ ${Math.round(total).toLocaleString()}`;
+        document.getElementById('valPago').innerText = `$ ${Math.round(totalSel).toLocaleString()}`;
     }
 
     function verResumen() {
-        act = null;
-        document.getElementById('secChofer').style.display = 'none';
-        document.getElementById('secResumen').style.display = 'block';
-        
+        act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block';
         let nCon = 0, nSin = 0;
-        db.choferes.forEach(c => {
-            if(c.viajes) {
-                c.viajes.forEach(v => {
-                    if(v.tipo === 'Carga') {
-                        nCon += (v.tn * v.tarifa) * (1 - v.comi/100);
-                        nSin += (v.tn * v.tarifa);
-                    }
-                });
-            }
-        });
+        db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } });
         const box = (t, n) => `<div class="card"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`;
-        document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Con Comisión)", nCon) + box("FACTURACIÓN (Sin Comisión)", nSin);
+        document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Real)", nCon) + box("FACTURACIÓN (Bruta)", nSin);
     }
 
     function toggleEstado(i) { db.choferes[act].viajes[i].estado = db.choferes[act].viajes[i].estado === 'Pendiente' ? 'Pagado' : 'Pendiente'; salvar(); }
