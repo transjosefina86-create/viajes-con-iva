@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LOGISTICA MASTER PRO v33</title>
+    <title>LOGISTICA MASTER PRO v34</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -14,14 +14,13 @@
 
         #side { width: 210px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         #main { flex-grow: 1; padding: 15px; overflow-y: auto; background: var(--bg); }
-        #calc { width: 270px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
+        #calc { width: 275px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
 
         .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 15px; }
         .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; }
         .chofer-item.active { background: var(--blue); }
         .menu-btn-chofer { flex-grow: 1; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; }
-        .btn-del-chofer { background: none; border: none; color: #64748b; cursor: pointer; padding: 5px; }
-
+        
         .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 10px; }
         
@@ -39,8 +38,13 @@
         .bg-pago { background: #e0e7ff; color: #3730a3; }
 
         .btn-save { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-pay { background: var(--blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
         .total-box { background: #1e293b; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
         
+        .btn-icon { border: none; background: none; cursor: pointer; padding: 5px; font-size: 14px; }
+        .btn-del { color: var(--red); }
+        .btn-edit { color: var(--blue); }
+
         @media print { .no-print { display: none !important; } #main { width: 100%; } }
     </style>
 </head>
@@ -54,7 +58,7 @@
 
 <div id="appBody" style="display: none; width: 100%; height: 100%;">
     <div id="side" class="no-print">
-        <div class="brand">LOGÍSTICA PRO v33</div>
+        <div class="brand">LOGÍSTICA PRO v34</div>
         <button onclick="verResumen()" style="width:90%; margin:5px 5%; padding:10px; background:#334155; color:white; border:none; border-radius:8px; cursor:pointer;">📊 TOTALES GENERALES</button>
         <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
         <div style="padding: 15px; border-top: 1px solid #1e293b;">
@@ -66,7 +70,7 @@
         <div id="secChofer" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2 id="txtNombre" style="margin:0;"></h2>
-                <button onclick="window.print()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">📄 PDF</button>
+                <button onclick="window.print()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">📄 GENERAR PDF</button>
             </div>
             
             <div class="card no-print">
@@ -74,7 +78,7 @@
                 <div class="input-row">
                     <div class="field"><label>Fecha</label><input type="date" id="fFecha" class="nav"></div>
                     <div class="field"><label>Factura</label><input type="text" id="fFactura" class="nav"></div>
-                    <div class="field"><label>Detalle (Ref Pago)</label><input type="text" id="fDetalle" class="nav" placeholder="Ej: Pago Flete Oct"></div>
+                    <div class="field"><label>Detalle</label><input type="text" id="fDetalle" class="nav"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="fTipo" class="nav" onchange="toggleLts()">
                             <option value="Carga">VIAJE</option>
@@ -95,7 +99,7 @@
             <div class="card" style="padding:0;">
                 <table>
                     <thead>
-                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle / Tipo</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print"></th></tr>
+                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle / Tipo</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print">Acción</th></tr>
                     </thead>
                     <tbody id="tablaViajes"></tbody>
                 </table>
@@ -114,7 +118,10 @@
             <h2 id="valPago" style="margin: 5px 0; font-size: 24px; color: #60a5fa;">$ 0</h2>
         </div>
         <div style="flex-grow: 1; overflow-y: auto;" id="liqcuerpo"></div>
-        <div style="border-top: 1px solid var(--border); padding-top: 10px;">
+        <div id="panelBotonesLiq" style="display:none;">
+            <button class="btn-pay" onclick="liquidarSeleccionados()">CONFIRMAR Y MARCAR PAGADOS</button>
+        </div>
+        <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px;">
             <div style="display:flex; justify-content:space-between; font-weight: bold; font-size: 13px;">
                 <span>SALDO PENDIENTE:</span> <span id="stTotal">$ 0</span>
             </div>
@@ -149,7 +156,7 @@
         db.choferes.forEach((c, i) => {
             l.innerHTML += `<div class="chofer-item ${act === i ? 'active' : ''}">
                 <button class="menu-btn-chofer" onclick="seleccionar(${i})">${c.nombre}</button>
-                <button class="btn-del-chofer" onclick="borrarChofer(${i})">🗑️</button>
+                <button style="background:none; border:none; color:#64748b; cursor:pointer; padding:5px;" onclick="borrarChofer(${i})">🗑️</button>
             </div>`;
         });
     }
@@ -182,7 +189,7 @@
         let idx = parseInt(document.getElementById('editIdx').value);
         if(idx > -1) { r.estado = db.choferes[act].viajes[idx].estado; db.choferes[act].viajes[idx] = r; }
         else { db.choferes[act].viajes.push(r); }
-        salvar(); limpiar(); document.getElementById('fFecha').focus();
+        salvar(); limpiar();
     }
 
     function renderTabla() {
@@ -192,19 +199,10 @@
         
         db.choferes[act].viajes.forEach((v, i) => {
             let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
-            let totalFila = 0;
-            let tag = "";
-
-            if(v.tipo === 'Carga') {
-                totalFila = neto * 1.21;
-            } else {
-                totalFila = -v.monto; // Gasoil, Adelanto y PAGO restan a la deuda
-                if(v.tipo === 'Adelanto') tag = '<span class="badge bg-adelanto">Adelanto</span>';
-                if(v.tipo === 'Gasoil') tag = '<span class="badge bg-gasoil">Gasoil</span>';
-                if(v.tipo === 'Pago') tag = '<span class="badge bg-pago">PAGO</span>';
-            }
+            let totalFila = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
             
             saldoAcumulado += totalFila;
+            let tag = v.tipo === 'Carga' ? "" : `<span class="badge bg-${v.tipo.toLowerCase()}">${v.tipo}</span>`;
             let pctTxt = (v.tipo === 'Carga' && v.comi > 0) ? `<br><small style="color:var(--orange)">Comisión: ${v.comi}%</small>` : '';
 
             body.innerHTML += `<tr>
@@ -216,7 +214,10 @@
                 <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
                 <td>$${Math.round(neto || 0).toLocaleString()}</td>
                 <td style="font-weight:bold; color:${totalFila < 0 ? 'red' : 'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
-                <td class="no-print"><button style="border:none; background:none; cursor:pointer;" onclick="editar(${i})">✎</button></td>
+                <td class="no-print">
+                    <button class="btn-icon btn-edit" onclick="editar(${i})">✎</button>
+                    <button class="btn-icon btn-del" onclick="borrarRegistro(${i})">🗑️</button>
+                </td>
             </tr>`;
         });
         document.getElementById('stTotal').innerText = `$ ${Math.round(saldoAcumulado).toLocaleString()}`;
@@ -227,39 +228,40 @@
         let cuerpo = document.getElementById('liqcuerpo');
         let totalSel = 0; cuerpo.innerHTML = '';
         let sel = document.querySelectorAll('.chk:checked');
-        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcá para relacionar al Pago</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
+        document.getElementById('panelBotonesLiq').style.display = sel.length > 0 ? 'block' : 'none';
+
+        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcá para liquidar</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
         
         sel.forEach(chk => {
             let v = db.choferes[act].viajes[chk.dataset.idx];
             let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
             let valor = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
             totalSel += valor;
-            
-            cuerpo.innerHTML += `
-                <div style="padding:8px 0; border-bottom:1px solid #f1f5f9;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;">
-                        <span>${v.detalle.substring(0,15)}</span>
-                        <span style="color:${valor<0?'red':'green'}">${valor<0?'-':''}$${Math.round(Math.abs(valor)).toLocaleString()}</span>
-                    </div>
-                    <small style="color:#94a3b8; font-size:9px;">${v.tipo}</small>
-                </div>`;
+            cuerpo.innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>${v.detalle.substring(0,18)}</span>
+                    <span style="color:${valor<0?'red':'green'}">$${Math.round(Math.abs(valor)).toLocaleString()}</span>
+                </div>
+            </div>`;
         });
         document.getElementById('valPago').innerText = `$ ${Math.round(totalSel).toLocaleString()}`;
     }
 
-    function verResumen() {
-        act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block';
-        let nCon = 0, nSin = 0;
-        db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } });
-        const box = (t, n) => `<div class="card"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`;
-        document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Real)", nCon) + box("FACTURACIÓN (Bruta)", nSin);
+    function liquidarSeleccionados() {
+        if(!confirm("¿Deseas marcar estos registros como PAGADOS?")) return;
+        document.querySelectorAll('.chk:checked').forEach(chk => {
+            db.choferes[act].viajes[chk.dataset.idx].estado = 'Pagado';
+        });
+        salvar();
     }
 
+    function borrarRegistro(i) { if(confirm("¿Eliminar este registro permanentemente?")) { db.choferes[act].viajes.splice(i,1); salvar(); } }
     function toggleEstado(i) { db.choferes[act].viajes[i].estado = db.choferes[act].viajes[i].estado === 'Pendiente' ? 'Pagado' : 'Pendiente'; salvar(); }
     function limpiar() { ['fFactura','fDetalle','fTn','fTarifa','fComi','fMonto','fLts'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fFecha').value = hoy(); document.getElementById('fTipo').value = 'Carga'; document.getElementById('editIdx').value = '-1'; toggleLts(); }
-    function editar(i) { let v = db.choferes[act].viajes[i]; document.getElementById('fFecha').value = v.fecha; document.getElementById('fFactura').value = v.factura; document.getElementById('fDetalle').value = v.detalle; document.getElementById('fTipo').value = v.tipo; document.getElementById('fTn').value = v.tn; document.getElementById('fTarifa').value = v.tarifa; document.getElementById('fComi').value = v.comi; document.getElementById('fMonto').value = v.monto; document.getElementById('fLts').value = v.lts || ''; document.getElementById('editIdx').value = i; toggleLts(); }
+    function editar(i) { let v = db.choferes[act].viajes[i]; document.getElementById('fFecha').value = v.fecha; document.getElementById('fFactura').value = v.factura; document.getElementById('fDetalle').value = v.detalle; document.getElementById('fTipo').value = v.tipo; document.getElementById('fTn').value = v.tn; document.getElementById('fTarifa').value = v.tarifa; document.getElementById('fComi').value = v.comi; document.getElementById('fMonto').value = v.monto; document.getElementById('fLts').value = v.lts || ''; document.getElementById('editIdx').value = i; toggleLts(); document.getElementById('fFecha').focus(); }
+    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; let nCon = 0, nSin = 0; db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } }); const box = (t, n) => `<div class="card"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`; document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Real)", nCon) + box("FACTURACIÓN (Bruta)", nSin); }
     function nuevoChofer() { let n = prompt("Nombre:"); if(n) { if(!db.choferes) db.choferes = []; db.choferes.push({nombre: n.toUpperCase(), viajes: []}); salvar(); } }
-    function borrarChofer(i) { if(confirm("¿Borrar chofer?")) { db.choferes.splice(i,1); act=null; salvar(); } }
+    function borrarChofer(i) { if(confirm("¿Borrar chofer y todos sus datos?")) { db.choferes.splice(i,1); act=null; salvar(); } }
 
     document.addEventListener('keydown', (e) => {
         if(e.key === 'Enter') {
