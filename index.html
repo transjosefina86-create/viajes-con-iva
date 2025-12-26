@@ -2,132 +2,118 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LOGISTICA MASTER PRO v34</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PRO Logística">
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
+
+    <title>PRO Logística (CON IVA)</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; --border: #e2e8f0; --green: #16a34a; --orange: #f59e0b; --red: #ef4444; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
-        
-        #bloqueo { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 10000; color: white; flex-direction: column; }
-        .pin-input { padding: 15px; font-size: 24px; text-align: center; border-radius: 8px; border: none; width: 220px; margin: 20px 0; background: #1e293b; color: white; letter-spacing: 5px; outline: none; border: 2px solid #334155; }
-
-        #side { width: 210px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        #main { flex-grow: 1; padding: 15px; overflow-y: auto; background: var(--bg); }
-        #calc { width: 275px; background: white; border-left: 2px solid var(--border); padding: 15px; flex-shrink: 0; display: flex; flex-direction: column; }
-
-        .brand { padding: 20px; font-weight: bold; color: #60a5fa; text-align: center; border-bottom: 1px solid #1e293b; font-size: 15px; }
-        .chofer-item { display: flex; align-items: center; width: 90%; margin: 5px 5%; background: #1e293b; border-radius: 8px; }
-        .chofer-item.active { background: var(--blue); }
-        .menu-btn-chofer { flex-grow: 1; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; }
-        
-        .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 10px; }
-        
-        .field { display: flex; flex-direction: column; gap: 3px; }
-        .field label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-        .field input, .field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background: #f1f5f9; padding: 10px; border-bottom: 2px solid var(--border); color: #475569; }
-        td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-
-        .badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-right: 5px; text-transform: uppercase; }
-        .bg-adelanto { background: #fef3c7; color: #92400e; }
-        .bg-gasoil { background: #dcfce7; color: #166534; }
-        .bg-pago { background: #e0e7ff; color: #3730a3; }
-
-        .btn-save { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-pay { background: var(--blue); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .total-box { background: #1e293b; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
-        
-        .btn-icon { border: none; background: none; cursor: pointer; padding: 5px; font-size: 14px; }
-        .btn-del { color: var(--red); }
-        .btn-edit { color: var(--blue); }
-
-        @media print { .no-print { display: none !important; } #main { width: 100%; } }
+        :root { --primary: #1e3a8a; --accent: #27ae60; --blue: #2563eb; --orange: #ea580c; --red: #dc2626; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        #lockscreen { position: fixed; inset: 0; background: var(--primary); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .sidebar { width: 230px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .search-box { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
+        .truck-item { padding: 12px; background: rgba(255,255,255,0.1); margin-bottom: 8px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .truck-item.active { background: var(--blue); font-weight: bold; border-left: 4px solid white; }
+        .main-wrapper { display: flex; flex-grow: 1; overflow: hidden; }
+        .main { flex-grow: 1; padding: 20px; overflow-y: auto; display: none; }
+        .card { background: white; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary); }
+        .form-grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .field { display: flex; flex-direction: column; flex-grow: 1; min-width: 110px; }
+        .field-detalle { flex-grow: 4; min-width: 280px; }
+        label { font-size: 11px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; }
+        input, select { padding: 11px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+        th { background: #f8fafc; padding: 14px; border-bottom: 2px solid #cbd5e1; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        .status-pill { padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; border: none; color: white; cursor: pointer; }
+        .pendiente { background: var(--red); }
+        .pagado { background: var(--accent); }
+        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; transition: 0.3s; }
+        .right-panels { width: 300px; background: #fff; border-left: 2px solid #ddd; display: flex; flex-direction: column; }
+        .panel-section { padding: 20px; border-bottom: 1px solid #eee; }
+        .liq-box { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
-<div id="bloqueo">
-    <h1>LOGÍSTICA MASTER</h1>
-    <input type="password" id="passInput" class="pin-input" placeholder="****">
-    <button onclick="verificar()" class="btn-save" style="width:220px; background: var(--blue);">ENTRAR</button>
-</div>
-
-<div id="appBody" style="display: none; width: 100%; height: 100%;">
-    <div id="side" class="no-print">
-        <div class="brand">LOGÍSTICA PRO v34</div>
-        <button onclick="verResumen()" style="width:90%; margin:5px 5%; padding:10px; background:#334155; color:white; border:none; border-radius:8px; cursor:pointer;">📊 TOTALES GENERALES</button>
-        <div id="listaChoferes" style="flex: 1; overflow-y: auto;"></div>
-        <div style="padding: 15px; border-top: 1px solid #1e293b;">
-            <button class="btn-save" style="background: var(--blue);" onclick="nuevoChofer()">+ NUEVO CHOFER</button>
+    <div id="lockscreen">
+        <div class="login-card">
+            <h2>LOGÍSTICA PRO (CON IVA)</h2>
+            <input type="password" id="passInput" placeholder="Clave de acceso" onkeydown="if(event.key==='Enter') verificar()">
+            <button class="btn" style="background:var(--blue); width:200px; margin-top:15px;" onclick="verificar()">ENTRAR</button>
         </div>
     </div>
 
-    <div id="main">
-        <div id="secChofer" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 id="txtNombre" style="margin:0;"></h2>
-                <button onclick="window.print()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">📄 GENERAR PDF</button>
-            </div>
-            
-            <div class="card no-print">
-                <input type="hidden" id="editIdx" value="-1">
-                <div class="input-row">
-                    <div class="field"><label>Fecha</label><input type="date" id="fFecha" class="nav"></div>
-                    <div class="field"><label>Factura</label><input type="text" id="fFactura" class="nav"></div>
-                    <div class="field"><label>Detalle</label><input type="text" id="fDetalle" class="nav"></div>
+    <div class="sidebar">
+        <h3 style="text-align:center;">MENU IVA</h3>
+        <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar chofer..." oninput="renderSidebar()">
+        <div id="truckList" style="flex-grow:1; overflow-y:auto"></div>
+        <button onclick="nuevoCamion()" class="btn" style="background:var(--accent); margin-top:10px;">+ Nuevo Chofer</button>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="main" id="mainGestion">
+            <h2 id="truckTitle" style="margin-top:0;"></h2>
+            <div class="card" id="formCard">
+                <div class="form-grid">
+                    <div class="field"><label>Fecha</label><input type="date" id="f_fecha" class="nav"></div>
+                    <div class="field"><label>Factura</label><input type="text" id="f_factura" class="nav" placeholder="N°"></div>
+                    <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino"></div>
+                    <div class="field"><label>TN</label><input type="number" id="f_ton" class="nav" placeholder="TN"></div>
+                    <div class="field"><label>Tarifa</label><input type="number" id="f_tar" class="nav" placeholder="$"></div>
+                    <div class="field"><label>Desc %</label><input type="number" id="f_desc" class="nav" placeholder="%"></div>
                     <div class="field"><label>Tipo</label>
-                        <select id="fTipo" class="nav" onchange="toggleLts()">
-                            <option value="Carga">VIAJE</option>
-                            <option value="Adelanto">ADELANTO</option>
-                            <option value="Gasoil">GASOIL</option>
-                            <option value="Pago">PAGO</option>
+                        <select id="f_tipo" class="nav" onchange="toggleGasoil()">
+                            <option value="Viaje">Viaje</option>
+                            <option value="Adelanto">Adelanto</option>
+                            <option value="Gasoil">Gasoil</option>
+                            <option value="Pago">Pago</option>
                         </select>
                     </div>
-                    <div class="field" id="fieldLts" style="display:none;"><label>Lts</label><input type="number" id="fLts" class="nav"></div>
-                    <div class="field"><label>TN</label><input type="number" id="fTn" class="nav" step="0.01"></div>
-                    <div class="field"><label>Tarifa</label><input type="number" id="fTarifa" class="nav"></div>
-                    <div class="field"><label>Comi %</label><input type="number" id="fComi" class="nav" placeholder="0"></div>
-                    <div class="field"><label>Importe $</label><input type="number" id="fMonto" class="nav"></div>
+                    <div class="field" id="div_litros" style="display:none"><label>Litros</label><input type="number" id="f_litros" class="nav" placeholder="Lts"></div>
+                    <div class="field"><label>Monto $</label><input type="number" id="f_monto" class="nav" placeholder="$"></div>
                 </div>
-                <button class="btn-save" onclick="guardar()">GUARDAR REGISTRO (ENTER)</button>
+                <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
+                    <button id="btnGuardar" class="btn" style="background:var(--accent); width:180px" onclick="guardar()">Cargar Registro</button>
+                    <button id="btnConfirmarEdit" class="btn" style="background:var(--orange); width:180px; display:none" onclick="confirmarEdicion()">Guardar Cambios</button>
+                    <button id="btnCancelarEdit" class="btn" style="background:#888; width:120px; display:none" onclick="cancelarEdicion()">Cancelar</button>
+                </div>
             </div>
 
-            <div class="card" style="padding:0;">
-                <table>
-                    <thead>
-                        <tr><th class="no-print">Sel</th><th>Fecha</th><th>Fac</th><th>Detalle / Tipo</th><th>Estado</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>Total</th><th class="no-print">Acción</th></tr>
-                    </thead>
-                    <tbody id="tablaViajes"></tbody>
-                </table>
+            <table id="tablaViajes">
+                <thead>
+                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Desc.</th><th>Neto+IVA</th><th>Gasto</th><th>Saldo</th></tr>
+                </thead>
+                <tbody id="tablaCuerpo"></tbody>
+            </table>
+        </div>
+
+        <div class="right-panels" id="panelDerecho" style="display:none">
+            <div class="panel-section">
+                <h3>💰 Liquidación</h3>
+                <div class="liq-box"><label>Viajes + IVA:</label><div id="sum-viajes" style="color:var(--accent); font-weight:bold;">$ 0</div></div>
+                <div class="liq-box"><label>Gastos (-):</label><div id="sum-gastos" style="color:var(--red); font-weight:bold;">$ 0</div></div>
+                <div class="liq-box" style="border-left:5px solid var(--blue); background:#f0f9ff"><label>SALDO FINAL:</label><div id="liq-subtotal" style="font-size:22px; font-weight:bold; color:#1e3a8a;">$ 0</div></div>
+                <button class="btn" style="background:var(--accent); margin-top:10px" onclick="marcarComoPagados()">✔ Marcar Pagados</button>
+                <button class="btn" style="background:var(--blue)" onclick="exportarPDF()">⬇ Descargar PDF Chofer</button>
             </div>
-        </div>
-
-        <div id="secResumen" style="display:none;">
-            <h2>Resumen General de Cargas</h2>
-            <div id="areaTotales" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;"></div>
-        </div>
-    </div>
-
-    <div id="calc" class="no-print">
-        <div class="total-box">
-            <small>LIQUIDACIÓN SELECCIONADA</small>
-            <h2 id="valPago" style="margin: 5px 0; font-size: 24px; color: #60a5fa;">$ 0</h2>
-        </div>
-        <div style="flex-grow: 1; overflow-y: auto;" id="liqcuerpo"></div>
-        <div id="panelBotonesLiq" style="display:none;">
-            <button class="btn-pay" onclick="liquidarSeleccionados()">CONFIRMAR Y MARCAR PAGADOS</button>
-        </div>
-        <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px;">
-            <div style="display:flex; justify-content:space-between; font-weight: bold; font-size: 13px;">
-                <span>SALDO PENDIENTE:</span> <span id="stTotal">$ 0</span>
+            <div class="panel-section">
+                <h3>⚙️ Acciones</h3>
+                <button id="btnEdit" class="btn" style="background:var(--orange); opacity:0.5" disabled onclick="prepararEdicion()">✎ Editar</button>
+                <button id="btnDel" class="btn" style="background:var(--red); opacity:0.5" disabled onclick="eliminarSeleccionados()">✕ Borrar</button>
             </div>
         </div>
     </div>
-</div>
 
 <script>
     const firebaseConfig = {
@@ -139,138 +125,163 @@
         messagingSenderId: "659354481888",
         appId: "1:659354481888:web:faec78a76d6fcb674d4c85"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database().ref('logistica_v26_final');
-    let db = { choferes: [] };
-    let act = null;
+    const dbRef = firebase.database().ref('viajes_CON_IVA');
 
-    function verificar() { if(document.getElementById('passInput').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('appBody').style.display='flex'; } else { alert("PIN Incorrecto"); } }
-    dbRef.on('value', (s) => { db = s.val() || { choferes: [] }; renderLista(); if(act !== null) renderTabla(); });
-    function salvar() { dbRef.set(db); }
-    function hoy() { return new Date().toISOString().split('T')[0]; }
+    let db = { camiones: [] }; let tIdx = null; let editId = null;
 
-    function renderLista() {
-        let l = document.getElementById('listaChoferes'); l.innerHTML = '';
-        if(!db.choferes) return;
-        db.choferes.forEach((c, i) => {
-            l.innerHTML += `<div class="chofer-item ${act === i ? 'active' : ''}">
-                <button class="menu-btn-chofer" onclick="seleccionar(${i})">${c.nombre}</button>
-                <button style="background:none; border:none; color:#64748b; cursor:pointer; padding:5px;" onclick="borrarChofer(${i})">🗑️</button>
-            </div>`;
+    window.onload = () => { document.getElementById('f_fecha').valueAsDate = new Date(); };
+
+    function verificar() { if(document.getElementById('passInput').value === "1234") document.getElementById('lockscreen').style.display = 'none'; else alert("Clave Incorrecta"); }
+    function toggleGasoil() { document.getElementById('div_litros').style.display = document.getElementById('f_tipo').value === 'Gasoil' ? 'flex' : 'none'; }
+
+    dbRef.on('value', (s) => { db = s.val() || { camiones: [] }; renderSidebar(); if (tIdx !== null) renderTabla(); });
+
+    function renderSidebar() {
+        const div = document.getElementById('truckList'); div.innerHTML = "";
+        const filtro = document.getElementById('buscador').value.toLowerCase();
+        if(!db.camiones) return;
+        db.camiones.forEach((c, i) => {
+            if (c.nombre.toLowerCase().includes(filtro)) {
+                const d = document.createElement('div'); d.className = `truck-item ${tIdx === i ? 'active' : ''}`;
+                d.innerHTML = `<span>${c.nombre}</span><button onclick="eliminarChofer(event, ${i})" style="background:none; border:none; color:white; cursor:pointer">✕</button>`;
+                d.onclick = () => { tIdx = i; document.getElementById('mainGestion').style.display='block'; document.getElementById('panelDerecho').style.display='flex'; renderTabla(); };
+                div.appendChild(d);
+            }
         });
-    }
-
-    function seleccionar(i) {
-        act = i;
-        document.getElementById('secResumen').style.display = 'none';
-        document.getElementById('secChofer').style.display = 'block';
-        document.getElementById('txtNombre').innerText = db.choferes[i].nombre;
-        limpiar(); renderTabla(); renderLista();
-    }
-
-    function toggleLts() { document.getElementById('fieldLts').style.display = (document.getElementById('fTipo').value === 'Gasoil') ? 'block' : 'none'; }
-
-    function guardar() {
-        if(act === null) return;
-        let r = {
-            fecha: document.getElementById('fFecha').value,
-            factura: document.getElementById('fFactura').value || '-',
-            detalle: document.getElementById('fDetalle').value || '-',
-            tipo: document.getElementById('fTipo').value,
-            estado: 'Pendiente',
-            lts: document.getElementById('fLts').value || '',
-            tn: parseFloat(document.getElementById('fTn').value) || 0,
-            tarifa: parseFloat(document.getElementById('fTarifa').value) || 0,
-            comi: parseFloat(document.getElementById('fComi').value) || 0,
-            monto: parseFloat(document.getElementById('fMonto').value) || 0
-        };
-        if(!db.choferes[act].viajes) db.choferes[act].viajes = [];
-        let idx = parseInt(document.getElementById('editIdx').value);
-        if(idx > -1) { r.estado = db.choferes[act].viajes[idx].estado; db.choferes[act].viajes[idx] = r; }
-        else { db.choferes[act].viajes.push(r); }
-        salvar(); limpiar();
     }
 
     function renderTabla() {
-        let body = document.getElementById('tablaViajes'); body.innerHTML = '';
-        let saldoAcumulado = 0;
-        if(!db.choferes[act].viajes) db.choferes[act].viajes = [];
-        
-        db.choferes[act].viajes.forEach((v, i) => {
-            let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
-            let totalFila = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
-            
-            saldoAcumulado += totalFila;
-            let tag = v.tipo === 'Carga' ? "" : `<span class="badge bg-${v.tipo.toLowerCase()}">${v.tipo}</span>`;
-            let pctTxt = (v.tipo === 'Carga' && v.comi > 0) ? `<br><small style="color:var(--orange)">Comisión: ${v.comi}%</small>` : '';
+        const cuerpo = document.getElementById('tablaCuerpo'); cuerpo.innerHTML = "";
+        document.getElementById('truckTitle').innerText = "Chofer: " + db.camiones[tIdx].nombre;
+        if (!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
+        db.camiones[tIdx].items.forEach(item => {
+            const netoSinIva = (item.ton * item.tar) * (1 - ((item.descP || 0) / 100));
+            const netoConIva = item.tipo === 'Viaje' ? netoSinIva * 1.21 : 0;
+            const gasto = item.adelVal || 0;
+            const saldo = (item.tipo === 'Viaje' ? netoConIva : 0) - gasto;
+            let fD = item.factura || '-'; let dD = item.detalle || '';
+            if(item.tipo==='Adelanto') fD=`<span style="color:#b91c1c; font-weight:bold;">ADELANTO</span>`;
+            if(item.tipo==='Pago') fD=`<span style="color:#1d4ed8; font-weight:bold;">PAGO</span>`;
+            if(item.tipo==='Gasoil') { fD=`<span style="color:#047857; font-weight:bold;">GASOIL</span>`; dD=`<strong>${item.litros||0} Lts</strong> - ${item.detalle||''}`; }
 
-            body.innerHTML += `<tr>
-                <td class="no-print"><input type="checkbox" class="chk" data-idx="${i}" onchange="calcPago()"></td>
-                <td>${v.fecha.split('-').reverse().join('/')}</td>
-                <td>${v.factura}</td>
-                <td style="text-align:left">${tag} ${v.detalle}${pctTxt}</td>
-                <td><button style="border:none; border-radius:10px; padding:2px 8px; font-size:10px; cursor:pointer; background:${v.estado==='Pagado'?'#dcfce7':'#fee2e2'}" onclick="toggleEstado(${i})">${v.estado}</button></td>
-                <td>${v.tn || '-'}</td><td>${v.tarifa || '-'}</td>
-                <td>$${Math.round(neto || 0).toLocaleString()}</td>
-                <td style="font-weight:bold; color:${totalFila < 0 ? 'red' : 'black'}">$${Math.round(Math.abs(totalFila)).toLocaleString()}</td>
-                <td class="no-print">
-                    <button class="btn-icon btn-edit" onclick="editar(${i})">✎</button>
-                    <button class="btn-icon btn-del" onclick="borrarRegistro(${i})">🗑️</button>
-                </td>
-            </tr>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${netoConIva}" data-gasto="${gasto}"></td>
+            <td><button class="status-pill ${item.estado || 'pendiente'}" onclick="cambiarEstado(${item.id})">${item.estado || 'pendiente'}</button></td>
+            <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+item.tar:''}</td><td>${item.descP||0}%</td><td>$${Math.round(netoConIva).toLocaleString()}</td><td>$${gasto.toLocaleString()}</td><td><strong>$${Math.round(saldo).toLocaleString()}</strong></td>`;
+            cuerpo.appendChild(tr);
         });
-        document.getElementById('stTotal').innerText = `$ ${Math.round(saldoAcumulado).toLocaleString()}`;
-        calcPago();
+        actualizarTotales();
     }
 
-    function calcPago() {
-        let cuerpo = document.getElementById('liqcuerpo');
-        let totalSel = 0; cuerpo.innerHTML = '';
-        let sel = document.querySelectorAll('.chk:checked');
-        document.getElementById('panelBotonesLiq').style.display = sel.length > 0 ? 'block' : 'none';
-
-        if(sel.length === 0) { cuerpo.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Marcá para liquidar</p>'; document.getElementById('valPago').innerText = '$ 0'; return; }
-        
-        sel.forEach(chk => {
-            let v = db.choferes[act].viajes[chk.dataset.idx];
-            let neto = (v.tn * v.tarifa) * (1 - (v.comi/100));
-            let valor = (v.tipo === 'Carga') ? (neto * 1.21) : -v.monto;
-            totalSel += valor;
-            cuerpo.innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
-                <div style="display:flex; justify-content:space-between;">
-                    <span>${v.detalle.substring(0,18)}</span>
-                    <span style="color:${valor<0?'red':'green'}">$${Math.round(Math.abs(valor)).toLocaleString()}</span>
-                </div>
-            </div>`;
-        });
-        document.getElementById('valPago').innerText = `$ ${Math.round(totalSel).toLocaleString()}`;
+    function guardar() {
+        const item = { id: Date.now(), fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value, estado: 'pendiente' };
+        if(!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
+        db.camiones[tIdx].items.push(item); dbRef.set(db);
+        ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros', 'f_desc'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('f_factura').focus();
     }
-
-    function liquidarSeleccionados() {
-        if(!confirm("¿Deseas marcar estos registros como PAGADOS?")) return;
-        document.querySelectorAll('.chk:checked').forEach(chk => {
-            db.choferes[act].viajes[chk.dataset.idx].estado = 'Pagado';
-        });
-        salvar();
-    }
-
-    function borrarRegistro(i) { if(confirm("¿Eliminar este registro permanentemente?")) { db.choferes[act].viajes.splice(i,1); salvar(); } }
-    function toggleEstado(i) { db.choferes[act].viajes[i].estado = db.choferes[act].viajes[i].estado === 'Pendiente' ? 'Pagado' : 'Pendiente'; salvar(); }
-    function limpiar() { ['fFactura','fDetalle','fTn','fTarifa','fComi','fMonto','fLts'].forEach(id => document.getElementById(id).value = ''); document.getElementById('fFecha').value = hoy(); document.getElementById('fTipo').value = 'Carga'; document.getElementById('editIdx').value = '-1'; toggleLts(); }
-    function editar(i) { let v = db.choferes[act].viajes[i]; document.getElementById('fFecha').value = v.fecha; document.getElementById('fFactura').value = v.factura; document.getElementById('fDetalle').value = v.detalle; document.getElementById('fTipo').value = v.tipo; document.getElementById('fTn').value = v.tn; document.getElementById('fTarifa').value = v.tarifa; document.getElementById('fComi').value = v.comi; document.getElementById('fMonto').value = v.monto; document.getElementById('fLts').value = v.lts || ''; document.getElementById('editIdx').value = i; toggleLts(); document.getElementById('fFecha').focus(); }
-    function verResumen() { act = null; document.getElementById('secChofer').style.display = 'none'; document.getElementById('secResumen').style.display = 'block'; let nCon = 0, nSin = 0; db.choferes.forEach(c => { if(c.viajes) { c.viajes.forEach(v => { if(v.tipo === 'Carga') { nCon += (v.tn * v.tarifa) * (1 - v.comi/100); nSin += (v.tn * v.tarifa); } }); } }); const box = (t, n) => `<div class="card"><h4>${t}</h4><p>Neto: $${Math.round(n).toLocaleString()}</p><p>IVA: $${Math.round(n*0.21).toLocaleString()}</p><b>TOTAL: $${Math.round(n*1.21).toLocaleString()}</b></div>`; document.getElementById('areaTotales').innerHTML = box("LIQUIDACIÓN (Real)", nCon) + box("FACTURACIÓN (Bruta)", nSin); }
-    function nuevoChofer() { let n = prompt("Nombre:"); if(n) { if(!db.choferes) db.choferes = []; db.choferes.push({nombre: n.toUpperCase(), viajes: []}); salvar(); } }
-    function borrarChofer(i) { if(confirm("¿Borrar chofer y todos sus datos?")) { db.choferes.splice(i,1); act=null; salvar(); } }
 
     document.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') {
-            const navs = Array.from(document.querySelectorAll('.nav')).filter(el => el.offsetParent !== null);
-            const idx = navs.indexOf(document.activeElement);
-            if(idx > -1 && idx < navs.length - 1) { e.preventDefault(); navs[idx+1].focus(); }
-            else if(idx === navs.length - 1) { e.preventDefault(); guardar(); }
+        if (e.key === 'Enter' && e.target.classList.contains('nav')) {
+            const inputs = Array.from(document.querySelectorAll('.nav')).filter(i => i.offsetParent !== null);
+            const idx = inputs.indexOf(e.target);
+            if (idx < inputs.length - 1) { e.preventDefault(); inputs[idx + 1].focus(); }
+            else { e.preventDefault(); guardar(); }
         }
     });
+
+    function prepararEdicion() {
+        const id = parseInt(document.querySelector('.chk:checked').dataset.id);
+        const item = db.camiones[tIdx].items.find(x => x.id === id);
+        editId = id;
+        document.getElementById('f_fecha').value = item.fecha;
+        document.getElementById('f_factura').value = item.factura || "";
+        document.getElementById('f_detalle').value = item.detalle;
+        document.getElementById('f_ton').value = item.ton || "";
+        document.getElementById('f_tar').value = item.tar || "";
+        document.getElementById('f_desc').value = item.descP || "";
+        document.getElementById('f_tipo').value = item.tipo || "Viaje";
+        document.getElementById('f_monto').value = item.adelVal || "";
+        toggleGasoil();
+        document.getElementById('btnGuardar').style.display = 'none';
+        document.getElementById('btnConfirmarEdit').style.display = 'inline-block';
+        document.getElementById('btnCancelarEdit').style.display = 'inline-block';
+    }
+
+    function confirmarEdicion() {
+        const idx = db.camiones[tIdx].items.findIndex(x => x.id === editId);
+        db.camiones[tIdx].items[idx] = { ...db.camiones[tIdx].items[idx], fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value };
+        dbRef.set(db); cancelarEdicion();
+    }
+
+    function cancelarEdicion() { editId = null; ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros', 'f_desc'].forEach(id => document.getElementById(id).value = ""); document.getElementById('btnGuardar').style.display = 'inline-block'; document.getElementById('btnConfirmarEdit').style.display = 'none'; document.getElementById('btnCancelarEdit').style.display = 'none'; }
+    function eliminarSeleccionados() { if(confirm("¿Borrar seleccionados?")) { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items = db.camiones[tIdx].items.filter(it => !ids.includes(it.id)); dbRef.set(db); } }
+    function eliminarChofer(e, i) { e.stopPropagation(); if(confirm("¿Borrar chofer?")) { db.camiones.splice(i, 1); tIdx = null; dbRef.set(db); } }
+
+    function actualizarTotales() {
+        const seleccionados = document.querySelectorAll('.chk:checked');
+        let vT = 0, gT = 0; seleccionados.forEach(x => { vT += parseFloat(x.dataset.neto); gT += parseFloat(x.dataset.gasto); });
+        document.getElementById('sum-viajes').innerText = `$ ${Math.round(vT).toLocaleString()}`;
+        document.getElementById('sum-gastos').innerText = `$ ${Math.round(gT).toLocaleString()}`;
+        document.getElementById('liq-subtotal').innerText = `$ ${Math.round(vT - gT).toLocaleString()}`;
+        document.getElementById('btnEdit').disabled = seleccionados.length !== 1;
+        document.getElementById('btnEdit').style.opacity = seleccionados.length !== 1 ? "0.5" : "1";
+        document.getElementById('btnDel').disabled = seleccionados.length === 0;
+        document.getElementById('btnDel').style.opacity = seleccionados.length === 0 ? "0.5" : "1";
+    }
+    document.addEventListener('change', (e) => { if(e.target.classList.contains('chk')) actualizarTotales(); });
+    function cambiarEstado(id) { const it = db.camiones[tIdx].items.find(x => x.id === id); it.estado = it.estado === 'pagado' ? 'pendiente' : 'pagado'; dbRef.set(db); }
+    function marcarComoPagados() { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items.forEach(it => { if(ids.includes(it.id)) it.estado = 'pagado'; }); dbRef.set(db); }
+    function nuevoCamion() { const n = prompt("Nombre:"); if(n) { if(!db.camiones) db.camiones = []; db.camiones.push({nombre:n.toUpperCase(), items:[]}); dbRef.set(db); } }
+
+    // PDF OPTIMIZADO: Letra chica, alta resolución para que no se vea movido
+    function exportarPDF() {
+        const chofer = db.camiones[tIdx].nombre;
+        const vT = document.getElementById('sum-viajes').innerText;
+        const gT = document.getElementById('sum-gastos').innerText;
+        const sT = document.getElementById('liq-subtotal').innerText;
+        const element = document.createElement('div');
+        element.style.padding = "10px";
+        element.style.backgroundColor = "white";
+        const tablaClonada = document.getElementById('tablaViajes').cloneNode(true);
+        tablaClonada.style.fontSize = "10px";
+        tablaClonada.style.width = "100%";
+        tablaClonada.querySelectorAll('tr').forEach(fila => {
+            fila.deleteCell(0); 
+            fila.deleteCell(0); 
+            Array.from(fila.cells).forEach(c => {
+                c.style.padding = "4px";
+                c.style.border = "1px solid #ddd";
+            });
+        });
+        element.innerHTML = `
+            <div style="text-align:center; border-bottom: 2px solid #1e3a8a; margin-bottom: 10px; padding-bottom: 5px;">
+                <h2 style="margin:0; font-size: 16px;">Liquidación de Transporte (CON IVA) - PRO Logística</h2>
+                <h3 style="margin:5px 0;">Chofer: ${chofer}</h3>
+                <p style="font-size: 10px;">Fecha: ${new Date().toLocaleDateString()}</p>
+            </div>
+            ${tablaClonada.outerHTML}
+            <div style="margin-top:15px; display: flex; justify-content: flex-end;">
+                <div style="width: 250px; background: #f0f0f0; padding: 10px; border: 1px solid #ccc; font-size: 11px;">
+                    <div style="display:flex; justify-content:space-between;"><span>Total Viajes + IVA:</span> <span>${vT}</span></div>
+                    <div style="display:flex; justify-content:space-between; color:red;"><span>Total Gastos:</span> <span>${gT}</span></div>
+                    <hr>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;"><span>SALDO FINAL:</span> <span>${sT}</span></div>
+                </div>
+            </div>`;
+        
+        const opt = {
+            margin: 10,
+            filename: `Liq_IVA_${chofer}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true }, // Escala 3 para máxima nitidez
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: 'avoid-all' }
+        };
+        
+        html2pdf().set(opt).from(element).save();
+    }
 </script>
 </body>
 </html>
