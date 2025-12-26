@@ -41,7 +41,7 @@
         .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; transition: 0.3s; }
         .right-panels { width: 300px; background: #fff; border-left: 2px solid #ddd; display: flex; flex-direction: column; }
         .panel-section { padding: 20px; border-bottom: 1px solid #eee; }
-        .liq-box { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .liq-box { background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
@@ -59,6 +59,7 @@
         <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar chofer..." oninput="renderSidebar()">
         <div id="truckList" style="flex-grow:1; overflow-y:auto"></div>
         <button onclick="nuevoCamion()" class="btn" style="background:var(--accent); margin-top:10px;">+ Nuevo Chofer</button>
+        <button onclick="verResumenGlobal()" class="btn" style="background:var(--orange); margin-top:5px;">📂 Resumen Mensual</button>
     </div>
 
     <div class="main-wrapper">
@@ -98,10 +99,21 @@
             </table>
         </div>
 
+        <div class="main" id="resumenSeccion">
+            <h2>Reporte de Facturación Mensual (CON IVA)</h2>
+            <div class="card" style="display:flex; gap:15px; align-items:flex-end; border-top-color: var(--orange);">
+                <div class="field"><label>Desde</label><input type="date" id="resDesde"></div>
+                <div class="field"><label>Hasta</label><input type="date" id="resHasta"></div>
+                <button class="btn" style="background:var(--blue); width:auto; padding: 10px 40px;" onclick="calcularFacturacion()">Calcular Reporte</button>
+            </div>
+            <div id="resultadoFacturacion" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px"></div>
+        </div>
+
         <div class="right-panels" id="panelDerecho" style="display:none">
             <div class="panel-section">
                 <h3>💰 Liquidación</h3>
-                <div class="liq-box"><label>Viajes + IVA:</label><div id="sum-viajes" style="color:var(--accent); font-weight:bold;">$ 0</div></div>
+                <div class="liq-box"><label>Neto S/IVA:</label><div id="sum-neto" style="color:#555; font-size:14px;">$ 0</div></div>
+                <div class="liq-box"><label>Total + IVA (21%):</label><div id="sum-viajes" style="color:var(--accent); font-weight:bold; font-size:18px;">$ 0</div></div>
                 <div class="liq-box"><label>Gastos (-):</label><div id="sum-gastos" style="color:var(--red); font-weight:bold;">$ 0</div></div>
                 <div class="liq-box" style="border-left:5px solid var(--blue); background:#f0f9ff"><label>SALDO FINAL:</label><div id="liq-subtotal" style="font-size:22px; font-weight:bold; color:#1e3a8a;">$ 0</div></div>
                 <button class="btn" style="background:var(--accent); margin-top:10px" onclick="marcarComoPagados()">✔ Marcar Pagados</button>
@@ -130,7 +142,11 @@
 
     let db = { camiones: [] }; let tIdx = null; let editId = null;
 
-    window.onload = () => { document.getElementById('f_fecha').valueAsDate = new Date(); };
+    window.onload = () => { 
+        document.getElementById('f_fecha').valueAsDate = new Date();
+        document.getElementById('resDesde').valueAsDate = new Date();
+        document.getElementById('resHasta').valueAsDate = new Date();
+    };
 
     function verificar() { if(document.getElementById('passInput').value === "1234") document.getElementById('lockscreen').style.display = 'none'; else alert("Clave Incorrecta"); }
     function toggleGasoil() { document.getElementById('div_litros').style.display = document.getElementById('f_tipo').value === 'Gasoil' ? 'flex' : 'none'; }
@@ -145,7 +161,7 @@
             if (c.nombre.toLowerCase().includes(filtro)) {
                 const d = document.createElement('div'); d.className = `truck-item ${tIdx === i ? 'active' : ''}`;
                 d.innerHTML = `<span>${c.nombre}</span><button onclick="eliminarChofer(event, ${i})" style="background:none; border:none; color:white; cursor:pointer">✕</button>`;
-                d.onclick = () => { tIdx = i; document.getElementById('mainGestion').style.display='block'; document.getElementById('panelDerecho').style.display='flex'; renderTabla(); };
+                d.onclick = () => { tIdx = i; document.getElementById('resumenSeccion').style.display='none'; document.getElementById('mainGestion').style.display='block'; document.getElementById('panelDerecho').style.display='flex'; renderTabla(); };
                 div.appendChild(d);
             }
         });
@@ -166,7 +182,7 @@
             if(item.tipo==='Gasoil') { fD=`<span style="color:#047857; font-weight:bold;">GASOIL</span>`; dD=`<strong>${item.litros||0} Lts</strong> - ${item.detalle||''}`; }
 
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${netoConIva}" data-gasto="${gasto}"></td>
+            tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${netoConIva}" data-sin="${netoSinIva}" data-gasto="${gasto}"></td>
             <td><button class="status-pill ${item.estado || 'pendiente'}" onclick="cambiarEstado(${item.id})">${item.estado || 'pendiente'}</button></td>
             <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+item.tar:''}</td><td>${item.descP||0}%</td><td>$${Math.round(netoConIva).toLocaleString()}</td><td>$${gasto.toLocaleString()}</td><td><strong>$${Math.round(saldo).toLocaleString()}</strong></td>`;
             cuerpo.appendChild(tr);
@@ -218,10 +234,48 @@
     function cancelarEdicion() { editId = null; ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros', 'f_desc'].forEach(id => document.getElementById(id).value = ""); document.getElementById('btnGuardar').style.display = 'inline-block'; document.getElementById('btnConfirmarEdit').style.display = 'none'; document.getElementById('btnCancelarEdit').style.display = 'none'; }
     function eliminarSeleccionados() { if(confirm("¿Borrar seleccionados?")) { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items = db.camiones[tIdx].items.filter(it => !ids.includes(it.id)); dbRef.set(db); } }
     function eliminarChofer(e, i) { e.stopPropagation(); if(confirm("¿Borrar chofer?")) { db.camiones.splice(i, 1); tIdx = null; dbRef.set(db); } }
+    function verResumenGlobal() { tIdx = null; document.getElementById('mainGestion').style.display = 'none'; document.getElementById('panelDerecho').style.display = 'none'; document.getElementById('resumenSeccion').style.display = 'block'; }
+
+    function calcularFacturacion() {
+        let nCon = 0; let nSin = 0;
+        const d = document.getElementById('resDesde').value;
+        const h = document.getElementById('resHasta').value;
+        db.camiones.forEach(c => {
+            if(c.items) {
+                c.items.forEach(it => {
+                    if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') {
+                        const sub = (it.ton * it.tar);
+                        nSin += sub;
+                        nCon += sub * (1 - ((it.descP || 0) / 100));
+                    }
+                });
+            }
+        });
+        const iCon = nCon * 0.21; const iSin = nSin * 0.21;
+        document.getElementById('resultadoFacturacion').innerHTML = `
+            <div class="card" style="border-left:8px solid var(--blue); padding:25px;">
+                <h3 style="color:var(--blue)">CON DESCUENTO</h3>
+                <p>Neto: $ ${Math.round(nCon).toLocaleString()}</p>
+                <p>IVA: $ ${Math.round(iCon).toLocaleString()}</p>
+                <hr><h2>TOTAL: $ ${Math.round(nCon + iCon).toLocaleString()}</h2>
+            </div>
+            <div class="card" style="border-left:8px solid var(--orange); padding:25px;">
+                <h3 style="color:var(--orange)">SIN DESCUENTO</h3>
+                <p>Neto: $ ${Math.round(nSin).toLocaleString()}</p>
+                <p>IVA: $ ${Math.round(iSin).toLocaleString()}</p>
+                <hr><h2>TOTAL: $ ${Math.round(nSin + iSin).toLocaleString()}</h2>
+            </div>`;
+    }
 
     function actualizarTotales() {
         const seleccionados = document.querySelectorAll('.chk:checked');
-        let vT = 0, gT = 0; seleccionados.forEach(x => { vT += parseFloat(x.dataset.neto); gT += parseFloat(x.dataset.gasto); });
+        let vT = 0, gT = 0, sI = 0; 
+        seleccionados.forEach(x => { 
+            vT += parseFloat(x.dataset.neto); 
+            sI += parseFloat(x.dataset.sin);
+            gT += parseFloat(x.dataset.gasto); 
+        });
+        document.getElementById('sum-neto').innerText = `$ ${Math.round(sI).toLocaleString()}`;
         document.getElementById('sum-viajes').innerText = `$ ${Math.round(vT).toLocaleString()}`;
         document.getElementById('sum-gastos').innerText = `$ ${Math.round(gT).toLocaleString()}`;
         document.getElementById('liq-subtotal').innerText = `$ ${Math.round(vT - gT).toLocaleString()}`;
@@ -235,9 +289,9 @@
     function marcarComoPagados() { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items.forEach(it => { if(ids.includes(it.id)) it.estado = 'pagado'; }); dbRef.set(db); }
     function nuevoCamion() { const n = prompt("Nombre:"); if(n) { if(!db.camiones) db.camiones = []; db.camiones.push({nombre:n.toUpperCase(), items:[]}); dbRef.set(db); } }
 
-    // PDF OPTIMIZADO: Letra chica, alta resolución para que no se vea movido
     function exportarPDF() {
         const chofer = db.camiones[tIdx].nombre;
+        const nI = document.getElementById('sum-neto').innerText;
         const vT = document.getElementById('sum-viajes').innerText;
         const gT = document.getElementById('sum-gastos').innerText;
         const sT = document.getElementById('liq-subtotal').innerText;
@@ -264,7 +318,8 @@
             ${tablaClonada.outerHTML}
             <div style="margin-top:15px; display: flex; justify-content: flex-end;">
                 <div style="width: 250px; background: #f0f0f0; padding: 10px; border: 1px solid #ccc; font-size: 11px;">
-                    <div style="display:flex; justify-content:space-between;"><span>Total Viajes + IVA:</span> <span>${vT}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Neto S/IVA:</span> <span>${nI}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>Total + IVA:</span> <span>${vT}</span></div>
                     <div style="display:flex; justify-content:space-between; color:red;"><span>Total Gastos:</span> <span>${gT}</span></div>
                     <hr>
                     <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;"><span>SALDO FINAL:</span> <span>${sT}</span></div>
@@ -275,11 +330,10 @@
             margin: 10,
             filename: `Liq_IVA_${chofer}.pdf`,
             image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true }, // Escala 3 para máxima nitidez
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
             pagebreak: { mode: 'avoid-all' }
         };
-        
         html2pdf().set(opt).from(element).save();
     }
 </script>
