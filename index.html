@@ -204,6 +204,42 @@
         document.getElementById('f_factura').focus();
     }
 
+    function calcularFacturacion() {
+        let netoConDesc = 0; let ivaConDesc = 0;
+        let netoSinDesc = 0; let ivaSinDesc = 0;
+        const d = document.getElementById('resDesde').value;
+        const h = document.getElementById('resHasta').value;
+        db.camiones.forEach(c => {
+            if(c.items) {
+                c.items.forEach(it => {
+                    if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') {
+                        const base = (it.ton * it.tar);
+                        const baseConDesc = base * (1 - ((it.descP || 0) / 100));
+                        
+                        netoSinDesc += base;
+                        ivaSinDesc += base * ((it.ivaP || 0) / 100);
+                        
+                        netoConDesc += baseConDesc;
+                        ivaConDesc += baseConDesc * ((it.ivaP || 0) / 100);
+                    }
+                });
+            }
+        });
+        document.getElementById('resultadoFacturacion').innerHTML = `
+            <div class="card" style="border-left:8px solid var(--blue); padding:20px;">
+                <h3 style="color:var(--blue); margin-top:0">CON DESCUENTO</h3>
+                <p>Neto: $ ${fM(netoConDesc)}</p>
+                <p>IVA: $ ${fM(ivaConDesc)}</p>
+                <hr><h2 style="margin:10px 0;">TOTAL: $ ${fM(netoConDesc + ivaConDesc)}</h2>
+            </div>
+            <div class="card" style="border-left:8px solid var(--orange); padding:20px;">
+                <h3 style="color:var(--orange); margin-top:0">SIN DESCUENTO</h3>
+                <p>Neto: $ ${fM(netoSinDesc)}</p>
+                <p>IVA: $ ${fM(ivaSinDesc)}</p>
+                <hr><h2 style="margin:10px 0;">TOTAL: $ ${fM(netoSinDesc + ivaSinDesc)}</h2>
+            </div>`;
+    }
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.classList.contains('nav')) {
             const inputs = Array.from(document.querySelectorAll('.nav')).filter(i => i.offsetParent !== null);
@@ -242,31 +278,6 @@
     function eliminarSeleccionados() { if(confirm("¿Borrar seleccionados?")) { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items = db.camiones[tIdx].items.filter(it => !ids.includes(it.id)); dbRef.set(db); } }
     function eliminarChofer(e, i) { e.stopPropagation(); if(confirm("¿Borrar chofer?")) { db.camiones.splice(i, 1); tIdx = null; dbRef.set(db); } }
     function verResumenGlobal() { tIdx = null; document.getElementById('mainGestion').style.display = 'none'; document.getElementById('panelDerecho').style.display = 'none'; document.getElementById('resumenSeccion').style.display = 'block'; }
-
-    function calcularFacturacion() {
-        let nT = 0; let iT = 0;
-        const d = document.getElementById('resDesde').value;
-        const h = document.getElementById('resHasta').value;
-        db.camiones.forEach(c => {
-            if(c.items) {
-                c.items.forEach(it => {
-                    if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') {
-                        const sub = (it.ton * it.tar) * (1 - ((it.descP || 0) / 100));
-                        nT += sub;
-                        iT += sub * ((it.ivaP || 0) / 100);
-                    }
-                });
-            }
-        });
-        document.getElementById('resultadoFacturacion').innerHTML = `
-            <div class="card" style="border-left:8px solid var(--blue); padding:25px; grid-column: 1 / span 2;">
-                <h3 style="color:var(--blue)">TOTAL FACTURACIÓN PERIODO</h3>
-                <p>Neto Gravado: $ ${fM(nT)}</p>
-                <p>IVA Total: $ ${fM(iT)}</p>
-                <hr>
-                <h2 style="font-size:32px">TOTAL CON IVA: $ ${fM(nT + iT)}</h2>
-            </div>`;
-    }
 
     function actualizarTotales() {
         const seleccionados = document.querySelectorAll('.chk:checked');
