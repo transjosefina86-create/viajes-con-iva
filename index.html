@@ -477,15 +477,15 @@
         element.style.fontFamily = "Arial, sans-serif";
         
         const tClon = document.getElementById('tablaViajes').cloneNode(true);
-        tClon.style.fontSize = "9px";
+        tClon.style.fontSize = "5px";
         tClon.style.width = "100%";
         tClon.querySelectorAll('tr').forEach(f => { f.deleteCell(0); f.deleteCell(1); });
         
         element.innerHTML = `
-            <h2 style="text-align:center; font-size:16px; margin-bottom:10px;">LIQUIDACIÓN DE FLETES: ${chofer}</h2>
+            <h2 style="text-align:center; font-size:10px; margin-bottom:10px;">LIQUIDACIÓN DE FLETES: ${chofer}</h2>
             <div style="margin-bottom:15px;">${tClon.outerHTML}</div>
             <div style="display:flex; justify-content:flex-end;">
-                <div style="border:1px solid #333; padding:10px; border-radius:5px; width:280px; background:#f9f9f9; font-size:10px;">
+                <div style="border:1px solid #333; padding:10px; border-radius:5px; width:180px; background:#f9f9f9; font-size:6px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>SUBTOTAL NETO:</span><b>${document.getElementById('sum-neto').innerText}</b></div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>IVA (21%):</span><b>${document.getElementById('sum-iva').innerText}</b></div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>TOTAL BRUTO:</span><b>${document.getElementById('sum-bruto').innerText}</b></div>
