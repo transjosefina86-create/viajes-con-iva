@@ -64,8 +64,8 @@
                     <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino / Comentario"></div>
                     <div class="field"><label>TN</label><input type="number" step="any" id="f_ton" class="nav" placeholder="TN"></div>
                     <div class="field"><label>Tarifa</label><input type="number" step="any" id="f_tar" class="nav" placeholder="$"></div>
-                    <div class="field"><label>Desc %</label><input type="number" step="any" id="f_desc" class="nav" value="0"></div>
-                    <div class="field"><label>IVA %</label><input type="number" step="any" id="f_iva" class="nav" value="21"></div>
+                    <div class="field"><label>Desc %</label><input type="number" step="any" id="f_desc" class="nav" placeholder="%"></div>
+                    <div class="field"><label>IVA %</label><input type="number" step="any" id="f_iva" class="nav" placeholder="%"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="f_tipo" class="nav" onchange="toggleGasoil()">
                             <option value="Viaje">Viaje</option>
@@ -173,7 +173,7 @@
             const gasto = item.adelVal || 0;
             const saldo = (item.tipo === 'Viaje' ? totalConIva : 0) - gasto;
             
-            let fD = item.factura || '-'; // Muestra siempre lo que vos escribas
+            let fD = item.factura || '-'; 
             let dD = item.detalle || '';
             let tnD = item.ton || '';
 
@@ -201,10 +201,10 @@
     }
 
     function guardar() {
-        const item = { id: Date.now(), fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value, estado: 'pendiente' };
+        const item = { id: Date.now(), fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||21, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value, estado: 'pendiente' };
         if(!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
         db.camiones[tIdx].items.push(item); dbRef.set(db);
-        ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros'].forEach(id => document.getElementById(id).value = "");
+        ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_desc', 'f_iva', 'f_monto', 'f_litros'].forEach(id => document.getElementById(id).value = "");
         document.getElementById('f_factura').focus();
     }
 
@@ -242,6 +242,15 @@
             </div>`;
     }
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.classList.contains('nav')) {
+            const inputs = Array.from(document.querySelectorAll('.nav')).filter(i => i.offsetParent !== null);
+            const idx = inputs.indexOf(e.target);
+            if (idx < inputs.length - 1) { e.preventDefault(); inputs[idx + 1].focus(); }
+            else { e.preventDefault(); guardar(); }
+        }
+    });
+
     function prepararEdicion() {
         const id = parseInt(document.querySelector('.chk:checked').dataset.id);
         const item = db.camiones[tIdx].items.find(x => x.id === id);
@@ -251,7 +260,7 @@
         document.getElementById('f_detalle').value = item.detalle;
         document.getElementById('f_ton').value = item.ton || "";
         document.getElementById('f_tar').value = item.tar || "";
-        document.getElementById('f_desc').value = item.descP || "0";
+        document.getElementById('f_desc').value = item.descP || "";
         document.getElementById('f_iva').value = item.ivaP || "21";
         document.getElementById('f_tipo').value = item.tipo || "Viaje";
         document.getElementById('f_monto').value = item.adelVal || "";
@@ -263,11 +272,11 @@
 
     function confirmarEdicion() {
         const idx = db.camiones[tIdx].items.findIndex(x => x.id === editId);
-        db.camiones[tIdx].items[idx] = { ...db.camiones[tIdx].items[idx], fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value };
+        db.camiones[tIdx].items[idx] = { ...db.camiones[tIdx].items[idx], fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||21, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value };
         dbRef.set(db); cancelarEdicion();
     }
 
-    function cancelarEdicion() { editId = null; ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros'].forEach(id => document.getElementById(id).value = ""); document.getElementById('btnGuardar').style.display = 'inline-block'; document.getElementById('btnConfirmarEdit').style.display = 'none'; document.getElementById('btnCancelarEdit').style.display = 'none'; }
+    function cancelarEdicion() { editId = null; ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_desc', 'f_iva', 'f_monto', 'f_litros'].forEach(id => document.getElementById(id).value = ""); document.getElementById('btnGuardar').style.display = 'inline-block'; document.getElementById('btnConfirmarEdit').style.display = 'none'; document.getElementById('btnCancelarEdit').style.display = 'none'; }
     function eliminarSeleccionados() { if(confirm("¿Borrar seleccionados?")) { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items = db.camiones[tIdx].items.filter(it => !ids.includes(it.id)); dbRef.set(db); } }
     function eliminarChofer(e, i) { e.stopPropagation(); if(confirm("¿Borrar chofer?")) { db.camiones.splice(i, 1); tIdx = null; dbRef.set(db); } }
     function verResumenGlobal() { tIdx = null; document.getElementById('mainGestion').style.display = 'none'; document.getElementById('panelDerecho').style.display = 'none'; document.getElementById('resumenSeccion').style.display = 'block'; }
