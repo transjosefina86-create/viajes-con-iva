@@ -32,9 +32,9 @@
         .field-detalle { flex-grow: 4; min-width: 280px; }
         label { font-size: 11px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; }
         input, select { padding: 11px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
-        th { background: #f8fafc; padding: 14px; border-bottom: 2px solid #cbd5e1; }
-        td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; }
+        th { background: #f8fafc; padding: 10px; border-bottom: 2px solid #cbd5e1; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center; }
         .status-pill { padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; border: none; color: white; cursor: pointer; }
         .pendiente { background: var(--red); }
         .pagado { background: var(--accent); }
@@ -70,9 +70,9 @@
                     <div class="field"><label>Fecha</label><input type="date" id="f_fecha" class="nav"></div>
                     <div class="field"><label>Factura</label><input type="text" id="f_factura" class="nav" placeholder="N°"></div>
                     <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino"></div>
-                    <div class="field"><label>TN</label><input type="number" step="0.01" id="f_ton" class="nav" placeholder="TN"></div>
-                    <div class="field"><label>Tarifa</label><input type="number" step="0.01" id="f_tar" class="nav" placeholder="$"></div>
-                    <div class="field"><label>IVA %</label><input type="number" step="0.01" id="f_iva" class="nav" value="21"></div>
+                    <div class="field"><label>TN</label><input type="number" step="any" id="f_ton" class="nav" placeholder="TN"></div>
+                    <div class="field"><label>Tarifa</label><input type="number" step="any" id="f_tar" class="nav" placeholder="$"></div>
+                    <div class="field"><label>IVA %</label><input type="number" step="any" id="f_iva" class="nav" value="21"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="f_tipo" class="nav" onchange="toggleGasoil()">
                             <option value="Viaje">Viaje</option>
@@ -81,8 +81,8 @@
                             <option value="Pago">Pago</option>
                         </select>
                     </div>
-                    <div class="field" id="div_litros" style="display:none"><label>Litros</label><input type="number" step="0.01" id="f_litros" class="nav" placeholder="Lts"></div>
-                    <div class="field"><label>Monto $</label><input type="number" step="0.01" id="f_monto" class="nav" placeholder="$"></div>
+                    <div class="field" id="div_litros" style="display:none"><label>Litros</label><input type="number" step="any" id="f_litros" class="nav" placeholder="Lts"></div>
+                    <div class="field"><label>Monto $</label><input type="number" step="any" id="f_monto" class="nav" placeholder="$"></div>
                 </div>
                 <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
                     <button id="btnGuardar" class="btn" style="background:var(--accent); width:180px" onclick="guardar()">Cargar Registro</button>
@@ -93,7 +93,7 @@
 
             <table id="tablaViajes">
                 <thead>
-                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>IVA</th><th>Neto+IVA</th><th>Gasto</th><th>Saldo</th></tr>
+                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>IVA $</th><th>TOTAL</th><th>Gasto</th><th>Saldo</th></tr>
                 </thead>
                 <tbody id="tablaCuerpo"></tbody>
             </table>
@@ -141,6 +141,8 @@
 
     let db = { camiones: [] }; let tIdx = null; let editId = null;
 
+    function fM(num) { return (num || 0).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
     window.onload = () => { 
         document.getElementById('f_fecha').valueAsDate = new Date();
         document.getElementById('resDesde').valueAsDate = new Date();
@@ -172,9 +174,11 @@
         if (!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
         db.camiones[tIdx].items.forEach(item => {
             const neto = (item.ton * item.tar);
-            const totalConIva = neto * (1 + ((item.ivaP || 0) / 100));
+            const ivaVal = neto * ((item.ivaP || 0) / 100);
+            const totalConIva = neto + ivaVal;
             const gasto = item.adelVal || 0;
             const saldo = (item.tipo === 'Viaje' ? totalConIva : 0) - gasto;
+            
             let fD = item.factura || '-'; let dD = item.detalle || '';
             if(item.tipo==='Adelanto') fD=`<span style="color:#b91c1c; font-weight:bold;">ADELANTO</span>`;
             if(item.tipo==='Pago') fD=`<span style="color:#1d4ed8; font-weight:bold;">PAGO</span>`;
@@ -183,7 +187,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${item.tipo==='Viaje'?totalConIva:0}" data-gasto="${gasto}"></td>
             <td><button class="status-pill ${item.estado || 'pendiente'}" onclick="cambiarEstado(${item.id})">${item.estado || 'pendiente'}</button></td>
-            <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+item.tar:''}</td><td>${item.ivaP||0}%</td><td>$${totalConIva.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td>$${gasto.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td><strong>$${saldo.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>`;
+            <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+fM(item.tar):''}</td>
+            <td>$${fM(neto)}</td><td>$${fM(ivaVal)}</td><td>$${fM(totalConIva)}</td><td>$${fM(gasto)}</td><td><strong>$${fM(saldo)}</strong></td>`;
             cuerpo.appendChild(tr);
         });
         actualizarTotales();
@@ -253,19 +258,19 @@
         document.getElementById('resultadoFacturacion').innerHTML = `
             <div class="card" style="border-left:8px solid var(--blue); padding:25px; grid-column: 1 / span 2;">
                 <h3 style="color:var(--blue)">TOTAL FACTURACIÓN PERIODO</h3>
-                <p>Neto Gravado: $ ${nT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
-                <p>IVA Total: $ ${iT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                <p>Neto Gravado: $ ${fM(nT)}</p>
+                <p>IVA Total: $ ${fM(iT)}</p>
                 <hr>
-                <h2 style="font-size:32px">TOTAL CON IVA: $ ${(nT + iT).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</h2>
+                <h2 style="font-size:32px">TOTAL CON IVA: $ ${fM(nT + iT)}</h2>
             </div>`;
     }
 
     function actualizarTotales() {
         const seleccionados = document.querySelectorAll('.chk:checked');
         let vT = 0, gT = 0; seleccionados.forEach(x => { vT += parseFloat(x.dataset.neto); gT += parseFloat(x.dataset.gasto); });
-        document.getElementById('sum-viajes').innerText = `$ ${vT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        document.getElementById('sum-gastos').innerText = `$ ${gT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        document.getElementById('liq-subtotal').innerText = `$ ${(vT - gT).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('sum-viajes').innerText = `$ ${fM(vT)}`;
+        document.getElementById('sum-gastos').innerText = `$ ${fM(gT)}`;
+        document.getElementById('liq-subtotal').innerText = `$ ${fM(vT - gT)}`;
         document.getElementById('btnEdit').disabled = seleccionados.length !== 1;
         document.getElementById('btnEdit').style.opacity = seleccionados.length !== 1 ? "0.5" : "1";
         document.getElementById('btnDel').disabled = seleccionados.length === 0;
@@ -285,7 +290,7 @@
         element.style.padding = "10px";
         element.style.backgroundColor = "white";
         const tablaClonada = document.getElementById('tablaViajes').cloneNode(true);
-        tablaClonada.style.fontSize = "10px";
+        tablaClonada.style.fontSize = "9px";
         tablaClonada.style.width = "100%";
         tablaClonada.querySelectorAll('tr').forEach(fila => {
             fila.deleteCell(0); 
@@ -304,7 +309,7 @@
             ${tablaClonada.outerHTML}
             <div style="margin-top:15px; display:flex; justify-content:flex-end;">
                 <div style="width:250px; background:#f0f0f0; padding:10px; border:1px solid #ccc; font-size:11px;">
-                    <div style="display:flex; justify-content:space-between;"><span>Total Viajes:</span> <span>${vT}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Total Viajes (c/IVA):</span> <span>${vT}</span></div>
                     <div style="display:flex; justify-content:space-between; color:red;"><span>Total Gastos:</span> <span>${gT}</span></div>
                     <hr>
                     <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;"><span>SALDO FINAL:</span> <span>${sT}</span></div>
