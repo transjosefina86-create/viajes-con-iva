@@ -470,34 +470,64 @@
         document.getElementById('btnCancelarEdit').style.display='none'; 
     }
 
-    function exportarPDF() {
-        const chofer = db.camiones[tIdx].nombre;
-        const element = document.createElement('div');
-        element.style.padding = "10px";
-        element.style.fontFamily = "Arial, sans-serif";
+   function exportarPDF() {
+    const chofer = db.camiones[tIdx].nombre;
+    const element = document.createElement('div');
+    
+    // Contenedor principal con fuente dinámica
+    element.style.padding = "5mm";
+    element.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+    element.style.color = "#333";
+
+    const tClon = document.getElementById('tablaViajes').cloneNode(true);
+    
+    // Ajuste automático de la tabla
+    tClon.style.width = "100%";
+    tClon.style.borderCollapse = "collapse";
+    tClon.style.fontSize = "10px"; // Tamaño ideal para que entren 15-20 viajes
+    tClon.style.marginBottom = "10px";
+    
+    // Limpiamos columnas innecesarias (Check y Estado)
+    tClon.querySelectorAll('tr').forEach(f => { 
+        f.deleteCell(0); 
+        f.deleteCell(1); 
+        // Estilo de celdas para que no ocupen aire de más
+        Array.from(f.cells).forEach(c => {
+            c.style.padding = "4px 2px";
+            c.style.border = "0.1pt solid #ccc";
+        });
+    });
+
+    element.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2c3e50; margin-bottom:10px; padding-bottom:5px;">
+            <h2 style="margin:0; font-size:14px;">LIQUIDACIÓN DE FLETES</h2>
+            <h2 style="margin:0; font-size:14px; color:#2980b9;">${chofer}</h2>
+        </div>
         
-        const tClon = document.getElementById('tablaViajes').cloneNode(true);
-        tClon.style.fontSize = "5px";
-        tClon.style.width = "100%";
-        tClon.querySelectorAll('tr').forEach(f => { f.deleteCell(0); f.deleteCell(1); });
-        
-        element.innerHTML = `
-            <h2 style="text-align:center; font-size:10px; margin-bottom:10px;">LIQUIDACIÓN DE FLETES: ${chofer}</h2>
-            <div style="margin-bottom:15px;">${tClon.outerHTML}</div>
-            <div style="display:flex; justify-content:flex-end;">
-                <div style="border:1px solid #333; padding:10px; border-radius:5px; width:180px; background:#f9f9f9; font-size:6px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>SUBTOTAL NETO:</span><b>${document.getElementById('sum-neto').innerText}</b></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>IVA (21%):</span><b>${document.getElementById('sum-iva').innerText}</b></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>TOTAL BRUTO:</span><b>${document.getElementById('sum-bruto').innerText}</b></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:red;"><span>ADELANTOS/GASTOS:</span><b>${document.getElementById('sum-gastos').innerText}</b></div>
-                    <hr style="margin:5px 0;">
-                    <div style="display:flex; justify-content:space-between; font-size:13px; color:blue;"><span>TOTAL A PAGAR:</span><b>${document.getElementById('liq-total').innerText}</b></div>
-                </div>
-            </div>
-        `;
-        const opt = { margin: 10, filename: `Liq_${chofer}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(element).save();
-    }
+        ${tClon.outerHTML}
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <table style="width: 250px; font-size: 9px; border-collapse: collapse; background: #f8fafc;">
+                <tr><td style="text-align:left; padding:3px; border:1px solid #ddd;">NETO:</td><td style="text-align:right; padding:3px; border:1px solid #ddd;"><b>${document.getElementById('sum-neto').innerText}</b></td></tr>
+                <tr><td style="text-align:left; padding:3px; border:1px solid #ddd;">IVA 21%:</td><td style="text-align:right; padding:3px; border:1px solid #ddd;"><b>${document.getElementById('sum-iva').innerText}</b></td></tr>
+                <tr><td style="text-align:left; padding:3px; border:1px solid #ddd;">BRUTO:</td><td style="text-align:right; padding:3px; border:1px solid #ddd;"><b>${document.getElementById('sum-bruto').innerText}</b></td></tr>
+                <tr><td style="text-align:left; padding:3px; border:1px solid #ddd; color:red;">GASTOS:</td><td style="text-align:right; padding:3px; border:1px solid #ddd; color:red;"><b>${document.getElementById('sum-gastos').innerText}</b></td></tr>
+                <tr style="background:#2c3e50; color:white;"><td style="text-align:left; padding:5px; border:1px solid #2c3e50;">SALDO FINAL:</td><td style="text-align:right; padding:5px; border:1px solid #2c3e50; font-size:12px;"><b>${document.getElementById('liq-total').innerText}</b></td></tr>
+            </table>
+        </div>
+        <div style="margin-top:15px; font-size:8px; color:gray; text-align:center;">Documento generado por Sistema PRO Logística</div>
+    `;
+
+    const opt = { 
+        margin: 5, 
+        filename: `Liq_${chofer}.pdf`, 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 3, useCORS: true }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
 
     function calcularFacturacion() {
         const d = document.getElementById('resDesde').value, h = document.getElementById('resHasta').value;
