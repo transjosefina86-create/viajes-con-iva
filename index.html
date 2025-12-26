@@ -28,8 +28,8 @@
         .main { flex-grow: 1; padding: 20px; overflow-y: auto; display: none; }
         .card { background: white; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary); }
         .form-grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
-        .field { display: flex; flex-direction: column; flex-grow: 1; min-width: 110px; }
-        .field-detalle { flex-grow: 4; min-width: 280px; }
+        .field { display: flex; flex-direction: column; flex-grow: 1; min-width: 100px; }
+        .field-detalle { flex-grow: 4; min-width: 250px; }
         label { font-size: 11px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; }
         input, select { padding: 11px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; }
@@ -72,6 +72,7 @@
                     <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino"></div>
                     <div class="field"><label>TN</label><input type="number" step="any" id="f_ton" class="nav" placeholder="TN"></div>
                     <div class="field"><label>Tarifa</label><input type="number" step="any" id="f_tar" class="nav" placeholder="$"></div>
+                    <div class="field"><label>Desc %</label><input type="number" step="any" id="f_desc" class="nav" value="0"></div>
                     <div class="field"><label>IVA %</label><input type="number" step="any" id="f_iva" class="nav" value="21"></div>
                     <div class="field"><label>Tipo</label>
                         <select id="f_tipo" class="nav" onchange="toggleGasoil()">
@@ -93,7 +94,7 @@
 
             <table id="tablaViajes">
                 <thead>
-                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Neto</th><th>IVA $</th><th>TOTAL</th><th>Gasto</th><th>Saldo</th></tr>
+                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Desc.</th><th>Neto</th><th>IVA $</th><th>TOTAL</th><th>Gasto</th><th>Saldo</th></tr>
                 </thead>
                 <tbody id="tablaCuerpo"></tbody>
             </table>
@@ -137,7 +138,7 @@
         appId: "1:659354481888:web:faec78a76d6fcb674d4c85"
     };
     firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database().ref('viajes');
+    const dbRef = firebase.database().ref('viajes_CON_IVA');
 
     let db = { camiones: [] }; let tIdx = null; let editId = null;
 
@@ -173,9 +174,10 @@
         document.getElementById('truckTitle').innerText = "Chofer: " + db.camiones[tIdx].nombre;
         if (!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
         db.camiones[tIdx].items.forEach(item => {
-            const neto = (item.ton * item.tar);
-            const ivaVal = neto * ((item.ivaP || 0) / 100);
-            const totalConIva = neto + ivaVal;
+            const netoOriginal = (item.ton * item.tar);
+            const netoConDesc = netoOriginal * (1 - ((item.descP || 0) / 100));
+            const ivaVal = netoConDesc * ((item.ivaP || 0) / 100);
+            const totalConIva = netoConDesc + ivaVal;
             const gasto = item.adelVal || 0;
             const saldo = (item.tipo === 'Viaje' ? totalConIva : 0) - gasto;
             
@@ -188,14 +190,14 @@
             tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${item.tipo==='Viaje'?totalConIva:0}" data-gasto="${gasto}"></td>
             <td><button class="status-pill ${item.estado || 'pendiente'}" onclick="cambiarEstado(${item.id})">${item.estado || 'pendiente'}</button></td>
             <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+fM(item.tar):''}</td>
-            <td>$${fM(neto)}</td><td>$${fM(ivaVal)}</td><td>$${fM(totalConIva)}</td><td>$${fM(gasto)}</td><td><strong>$${fM(saldo)}</strong></td>`;
+            <td>${item.descP||0}%</td><td>$${fM(netoConDesc)}</td><td>$${fM(ivaVal)}</td><td>$${fM(totalConIva)}</td><td>$${fM(gasto)}</td><td><strong>$${fM(saldo)}</strong></td>`;
             cuerpo.appendChild(tr);
         });
         actualizarTotales();
     }
 
     function guardar() {
-        const item = { id: Date.now(), fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value, estado: 'pendiente' };
+        const item = { id: Date.now(), fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value, estado: 'pendiente' };
         if(!db.camiones[tIdx].items) db.camiones[tIdx].items = [];
         db.camiones[tIdx].items.push(item); dbRef.set(db);
         ['f_factura', 'f_detalle', 'f_ton', 'f_tar', 'f_monto', 'f_litros'].forEach(id => document.getElementById(id).value = "");
@@ -220,6 +222,7 @@
         document.getElementById('f_detalle').value = item.detalle;
         document.getElementById('f_ton').value = item.ton || "";
         document.getElementById('f_tar').value = item.tar || "";
+        document.getElementById('f_desc').value = item.descP || "0";
         document.getElementById('f_iva').value = item.ivaP || "21";
         document.getElementById('f_tipo').value = item.tipo || "Viaje";
         document.getElementById('f_monto').value = item.adelVal || "";
@@ -231,7 +234,7 @@
 
     function confirmarEdicion() {
         const idx = db.camiones[tIdx].items.findIndex(x => x.id === editId);
-        db.camiones[tIdx].items[idx] = { ...db.camiones[tIdx].items[idx], fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value };
+        db.camiones[tIdx].items[idx] = { ...db.camiones[tIdx].items[idx], fecha: document.getElementById('f_fecha').value, factura: document.getElementById('f_factura').value, detalle: document.getElementById('f_detalle').value, ton: parseFloat(document.getElementById('f_ton').value)||0, tar: parseFloat(document.getElementById('f_tar').value)||0, descP: parseFloat(document.getElementById('f_desc').value)||0, ivaP: parseFloat(document.getElementById('f_iva').value)||0, adelVal: parseFloat(document.getElementById('f_monto').value)||0, tipo: document.getElementById('f_tipo').value, litros: document.getElementById('f_litros').value };
         dbRef.set(db); cancelarEdicion();
     }
 
@@ -248,7 +251,7 @@
             if(c.items) {
                 c.items.forEach(it => {
                     if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') {
-                        const sub = (it.ton * it.tar);
+                        const sub = (it.ton * it.tar) * (1 - ((it.descP || 0) / 100));
                         nT += sub;
                         iT += sub * ((it.ivaP || 0) / 100);
                     }
@@ -290,13 +293,13 @@
         element.style.padding = "10px";
         element.style.backgroundColor = "white";
         const tablaClonada = document.getElementById('tablaViajes').cloneNode(true);
-        tablaClonada.style.fontSize = "9px";
+        tablaClonada.style.fontSize = "8px";
         tablaClonada.style.width = "100%";
         tablaClonada.querySelectorAll('tr').forEach(fila => {
             fila.deleteCell(0); 
             fila.deleteCell(0); 
             Array.from(fila.cells).forEach(c => {
-                c.style.padding = "4px";
+                c.style.padding = "3px";
                 c.style.border = "1px solid #ddd";
             });
         });
@@ -317,7 +320,7 @@
             </div>`;
         
         const opt = {
-            margin: 10,
+            margin: 5,
             filename: `Liq_${chofer}.pdf`,
             image: { type: 'jpeg', quality: 1 },
             html2canvas: { scale: 3, useCORS: true, letterRendering: true },
