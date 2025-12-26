@@ -30,42 +30,40 @@
         .field-full { grid-column: 1 / -1; }
         label { font-size: 11px; font-weight: 800; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         input, select { padding: 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2); }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         th { background: #f1f5f9; padding: 15px; text-align: center; color: #334155; border-bottom: 2px solid #e2e8f0; font-weight: 700; }
         td { padding: 14px; border-bottom: 1px solid #f1f5f9; text-align: center; color: #475569; }
-        tr:last-child td { border-bottom: none; }
         
         .status-pill { padding: 6px 12px; border-radius: 6px; font-size: 10px; font-weight: 800; border: none; color: white; cursor: pointer; text-transform: uppercase; }
-        .pendiente { background: var(--red); box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3); }
-        .pagado { background: var(--accent); box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3); }
+        .pendiente { background: var(--red); }
+        .pagado { background: var(--accent); }
 
         .right-panels { width: 340px; background: #fff; border-left: 2px solid #f1f5f9; display: flex; flex-direction: column; }
         .panel-section { padding: 30px; border-bottom: 1px solid #f1f5f9; }
         .liq-box { background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        .liq-box label { display: block; margin-bottom: 8px; color: #64748b; font-size: 12px; }
         .liq-val { font-size: 20px; font-weight: 800; }
 
         .btn { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; transition: 0.3s; text-align: center; text-transform: uppercase; font-size: 13px; }
-        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:hover { filter: brightness(1.1); }
 
-        .resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px; }
+        .resumen-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 25px; }
+        @media (min-width: 1200px) { .resumen-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
 
     <div id="lockscreen">
         <div class="login-card">
-            <h1 style="color:var(--primary); margin-bottom:10px;">PRO LOGÍSTICA</h1>
-            <p style="color:#666; margin-bottom:25px;">SISTEMA CON IVA</p>
-            <input type="password" id="passInput" placeholder="Contraseña de seguridad" onkeydown="if(event.key==='Enter') verificar()">
-            <button class="btn" style="background:var(--blue); width:100%; margin-top:20px;" onclick="verificar()">ACCEDER AL SISTEMA</button>
+            <h1 style="color:var(--primary)">PRO LOGÍSTICA</h1>
+            <p>SISTEMA CON IVA</p>
+            <input type="password" id="passInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter') verificar()">
+            <button class="btn" style="background:var(--blue); width:100%; margin-top:20px;" onclick="verificar()">ACCEDER</button>
         </div>
     </div>
 
     <div class="sidebar">
-        <h2 style="text-align:center; margin-bottom:25px; font-size:20px;">PANEL IVA</h2>
+        <h2 style="text-align:center;">PANEL IVA</h2>
         <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar chofer..." oninput="renderSidebar()">
         <div id="truckList" class="truck-list"></div>
         <button onclick="nuevoCamion()" class="btn" style="background:var(--accent); margin-bottom:10px;">+ NUEVO CHOFER</button>
@@ -74,7 +72,7 @@
 
     <div class="main-wrapper">
         <div class="main" id="mainGestion">
-            <h2 id="truckTitle" style="color:var(--primary); margin-top:0;"></h2>
+            <h2 id="truckTitle" style="color:var(--primary);"></h2>
             <div class="card">
                 <div class="form-grid">
                     <div class="field"><label>Fecha</label><input type="date" id="f_fecha" class="nav"></div>
@@ -95,7 +93,7 @@
                     <div class="field"><label>Monto $</label><input type="number" step="any" id="f_monto" class="nav"></div>
                 </div>
                 <div style="display:flex; gap:15px; margin-top:25px; justify-content: flex-end;">
-                    <button id="btnGuardar" class="btn" style="background:var(--accent); width:220px" onclick="guardar()">CARGAR AL REGISTRO</button>
+                    <button id="btnGuardar" class="btn" style="background:var(--accent); width:220px" onclick="guardar()">CARGAR</button>
                     <button id="btnConfirmarEdit" class="btn" style="background:var(--orange); width:220px; display:none" onclick="confirmarEdicion()">GUARDAR EDICIÓN</button>
                     <button id="btnCancelarEdit" class="btn" style="background:#64748b; width:130px; display:none" onclick="cancelarEdicion()">CANCELAR</button>
                 </div>
@@ -122,10 +120,10 @@
         </div>
 
         <div class="main" id="resumenSeccion">
-            <h2 style="color:var(--orange); margin-top:0;">📂 Reporte Mensual (CON IVA)</h2>
+            <h2 style="color:var(--orange);">📂 Reporte Mensual (CON IVA)</h2>
             <div class="card" style="display:flex; gap:20px; align-items:flex-end;">
-                <div class="field"><label>Fecha Inicio</label><input type="date" id="resDesde"></div>
-                <div class="field"><label>Fecha Fin</label><input type="date" id="resHasta"></div>
+                <div class="field"><label>Inicio</label><input type="date" id="resDesde"></div>
+                <div class="field"><label>Fin</label><input type="date" id="resHasta"></div>
                 <button class="btn" style="background:var(--blue); padding:0 40px; height:45px;" onclick="calcularFacturacion()">CALCULAR</button>
             </div>
             <div id="resultadoFacturacion" class="resumen-grid"></div>
@@ -133,10 +131,10 @@
 
         <div class="right-panels" id="panelDerecho" style="display:none">
             <div class="panel-section">
-                <h3 style="margin-top:0; color:var(--primary);">💰 Liquidación</h3>
-                <div class="liq-box"><label>Total Bruto Viajes:</label><div id="sum-viajes" class="liq-val" style="color:var(--accent);">$ 0.00</div></div>
-                <div class="liq-box"><label>Total Gastos:</label><div id="sum-gastos" class="liq-val" style="color:var(--red);">$ 0.00</div></div>
-                <div class="liq-box" style="background:#eff6ff; border: 2px solid var(--blue);"><label>SALDO FINAL:</label><div id="liq-subtotal" class="liq-val" style="font-size:26px; color:#1e3a8a;">$ 0.00</div></div>
+                <h3 style="color:var(--primary);">💰 Liquidación</h3>
+                <div class="liq-box"><label>Bruto Viajes:</label><div id="sum-viajes" class="liq-val" style="color:var(--accent);">$ 0.00</div></div>
+                <div class="liq-box"><label>Gastos:</label><div id="sum-gastos" class="liq-val" style="color:var(--red);">$ 0.00</div></div>
+                <div class="liq-box" style="background:#eff6ff; border: 2px solid var(--blue);"><label>SALDO FINAL:</label><div id="liq-subtotal" class="liq-val" style="color:#1e3a8a;">$ 0.00</div></div>
                 <button class="btn" style="background:var(--accent); width:100%; margin-bottom:12px;" onclick="marcarComoPagados()">✔ MARCAR PAGADOS</button>
                 <button class="btn" style="background:var(--blue); width:100%;" onclick="exportarPDF()">⬇ DESCARGAR PDF</button>
             </div>
@@ -169,7 +167,7 @@
         document.getElementById('resHasta').valueAsDate = new Date();
     };
 
-    function verificar() { if(document.getElementById('passInput').value === "1234") document.getElementById('lockscreen').style.display = 'none'; else alert("Error"); }
+    function verificar() { if(document.getElementById('passInput').value === "1234") document.getElementById('lockscreen').style.display='none'; else alert("Error"); }
     function toggleGasoil() { document.getElementById('div_litros').style.display = document.getElementById('f_tipo').value === 'Gasoil' ? 'flex' : 'none'; }
     
     dbRef.on('value', (s) => { db = s.val() || { camiones: [] }; renderSidebar(); if (tIdx !== null) renderTabla(); });
@@ -229,16 +227,16 @@
         db.camiones.forEach(c => { if(c.items) c.items.forEach(it => { if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') { const n = it.ton * it.tar; nSin += n; nCon += n * (1 - ((it.descP || 0) / 100)); }});});
         const iSin = nSin * 0.21, iCon = nCon * 0.21;
         document.getElementById('resultadoFacturacion').innerHTML = `
-            <div class="card" style="border-left:10px solid var(--orange)"><h3>VALORES SIN DESCUENTO</h3><p>Neto: $ ${fM(nSin)}</p><p>IVA (21%): $ ${fM(iSin)}</p><hr><h2>TOTAL: $ ${fM(nSin+iSin)}</h2></div>
-            <div class="card" style="border-left:10px solid var(--accent)"><h3>VALORES CON DESCUENTO</h3><p>Neto: $ ${fM(nCon)}</p><p>IVA (21%): $ ${fM(iCon)}</p><hr><h2>TOTAL: $ ${fM(nCon+iCon)}</h2></div>`;
+            <div class="card" style="border-left:10px solid var(--orange)"><h3>VALORES SIN DESCUENTO</h3><p>Monto Neto: <strong>$ ${fM(nSin)}</strong></p><p>IVA (21%): <strong>$ ${fM(iSin)}</strong></p><hr><h2 style="margin:0;">TOTAL: $ ${fM(nSin+iSin)}</h2></div>
+            <div class="card" style="border-left:10px solid var(--accent)"><h3>VALORES CON DESCUENTO</h3><p>Monto Neto: <strong>$ ${fM(nCon)}</strong></p><p>IVA (21%): <strong>$ ${fM(iCon)}</strong></p><hr><h2 style="margin:0;">TOTAL: $ ${fM(nCon+iCon)}</h2></div>`;
     }
 
     function exportarPDF() {
         if(tIdx === null) return;
         const chofer = db.camiones[tIdx].nombre;
-        const vT = document.getElementById('sum-viajes').innerText;
-        const gT = document.getElementById('sum-gastos').innerText;
-        const sT = document.getElementById('liq-subtotal').innerText;
+        const vT = document.getElementById('sum-viajes').innerText || "$ 0,00";
+        const gT = document.getElementById('sum-gastos').innerText || "$ 0,00";
+        const sT = document.getElementById('liq-subtotal').innerText || "$ 0,00";
         const element = document.createElement('div');
         element.style.padding = "20px";
         const tClon = document.getElementById('tablaViajes').cloneNode(true);
@@ -247,10 +245,10 @@
             f.deleteCell(0); f.deleteCell(0);
             Array.from(f.cells).forEach(c => { c.style.border = "1px solid #ddd"; c.style.padding = "6px"; });
         });
-        element.innerHTML = `<div style="text-align:center; border-bottom:3px solid #34495e; margin-bottom:20px;"><h1>PRO LOGÍSTICA (IVA) - LIQUIDACIÓN</h1><h2>${chofer}</h2><p>Emisión: ${new Date().toLocaleDateString()}</p></div>
+        element.innerHTML = `<div style="text-align:center; border-bottom:3px solid #34495e; margin-bottom:20px;"><h1>PRO LOGÍSTICA (IVA) - LIQUIDACIÓN</h1><h2>${chofer}</h2><p>Fecha: ${new Date().toLocaleDateString()}</p></div>
             ${tClon.outerHTML}
-            <div style="margin-top:30px; text-align:right;"><div style="display:inline-block; width:280px; background:#f8fafc; padding:20px; border:1px solid #ccc; border-radius:10px;">
-            <p>Bruto Viajes: ${vT}</p><p style="color:red">Gastos: ${gT}</p><hr><h2>NETO: ${sT}</h2></div></div>`;
+            <div style="margin-top:30px; text-align:right;"><div style="display:inline-block; width:280px; background:#f8fafc; padding:20px; border:2px solid #ccc; border-radius:10px;">
+            <p>Bruto Viajes Seleccionados: <strong>${vT}</strong></p><p style="color:red">Total Gastos/Adelantos: <strong>${gT}</strong></p><hr><h2 style="color:#1e3a8a;">NETO A COBRAR: ${sT}</h2></div></div>`;
         html2pdf().set({ margin:10, filename:`Liq_IVA_${chofer}.pdf`, html2canvas:{scale:3}, jsPDF:{unit:'mm', format:'a4', orientation:'landscape'} }).from(element).save();
     }
 
