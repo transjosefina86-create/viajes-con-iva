@@ -3,18 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="PRO Logística">
-    
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
-
     <title>PRO Logística (CON IVA)</title>
-    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
     <style>
         :root { --primary: #2c3e50; --accent: #27ae60; --blue: #2980b9; --orange: #e67e22; --red: #e74c3c; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -68,8 +60,8 @@
             <div class="card" id="formCard">
                 <div class="form-grid">
                     <div class="field"><label>Fecha</label><input type="date" id="f_fecha" class="nav"></div>
-                    <div class="field"><label>Factura</label><input type="text" id="f_factura" class="nav" placeholder="N°"></div>
-                    <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino"></div>
+                    <div class="field"><label>Factura/Remito</label><input type="text" id="f_factura" class="nav" placeholder="N°"></div>
+                    <div class="field-detalle"><label>Detalle</label><input type="text" id="f_detalle" class="nav" placeholder="Origen - Destino / Comentario"></div>
                     <div class="field"><label>TN</label><input type="number" step="any" id="f_ton" class="nav" placeholder="TN"></div>
                     <div class="field"><label>Tarifa</label><input type="number" step="any" id="f_tar" class="nav" placeholder="$"></div>
                     <div class="field"><label>Desc %</label><input type="number" step="any" id="f_desc" class="nav" value="0"></div>
@@ -94,7 +86,7 @@
 
             <table id="tablaViajes">
                 <thead>
-                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Desc.</th><th>Neto</th><th>IVA $</th><th>TOTAL</th><th>Gasto</th><th>Saldo</th></tr>
+                    <tr><th>Sel.</th><th>Estado</th><th>Fecha</th><th>Factura/Rem</th><th>Detalle</th><th>TN</th><th>Tarifa</th><th>Desc.</th><th>Neto</th><th>IVA $</th><th>TOTAL</th><th>Gasto</th><th>Saldo</th></tr>
                 </thead>
                 <tbody id="tablaCuerpo"></tbody>
             </table>
@@ -181,15 +173,27 @@
             const gasto = item.adelVal || 0;
             const saldo = (item.tipo === 'Viaje' ? totalConIva : 0) - gasto;
             
-            let fD = item.factura || '-'; let dD = item.detalle || '';
-            if(item.tipo==='Adelanto') fD=`<span style="color:#b91c1c; font-weight:bold;">ADELANTO</span>`;
-            if(item.tipo==='Pago') fD=`<span style="color:#1d4ed8; font-weight:bold;">PAGO</span>`;
-            if(item.tipo==='Gasoil') { fD=`<span style="color:#047857; font-weight:bold;">GASOIL</span>`; dD=`<strong>${item.litros||0} Lts</strong> - ${item.detalle||''}`; }
+            let fD = item.factura || '-'; // Muestra siempre lo que vos escribas
+            let dD = item.detalle || '';
+            let tnD = item.ton || '';
+
+            if(item.tipo==='Adelanto') {
+                dD = `<span style="color:#b91c1c; font-weight:bold;">ADELANTO:</span> ${item.detalle || ''}`;
+                tnD = '';
+            }
+            if(item.tipo==='Pago') {
+                dD = `<span style="color:#1d4ed8; font-weight:bold;">PAGO:</span> ${item.detalle || ''}`;
+                tnD = '';
+            }
+            if(item.tipo==='Gasoil') {
+                dD = `<span style="color:#047857; font-weight:bold;">GASOIL (${item.litros||0} Lts):</span> ${item.detalle||''}`;
+                tnD = '';
+            }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><input type="checkbox" class="chk" data-id="${item.id}" data-neto="${item.tipo==='Viaje'?totalConIva:0}" data-gasto="${gasto}"></td>
             <td><button class="status-pill ${item.estado || 'pendiente'}" onclick="cambiarEstado(${item.id})">${item.estado || 'pendiente'}</button></td>
-            <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${item.ton||''}</td><td>${item.tar?'$'+fM(item.tar):''}</td>
+            <td>${item.fecha}</td><td>${fD}</td><td style="text-align:left">${dD}</td><td>${tnD}</td><td>${item.tar?'$'+fM(item.tar):''}</td>
             <td>${item.descP||0}%</td><td>$${fM(netoConDesc)}</td><td>$${fM(ivaVal)}</td><td>$${fM(totalConIva)}</td><td>$${fM(gasto)}</td><td><strong>$${fM(saldo)}</strong></td>`;
             cuerpo.appendChild(tr);
         });
@@ -215,10 +219,8 @@
                     if(it.fecha >= d && it.fecha <= h && it.tipo === 'Viaje') {
                         const base = (it.ton * it.tar);
                         const baseConDesc = base * (1 - ((it.descP || 0) / 100));
-                        
                         netoSinDesc += base;
                         ivaSinDesc += base * ((it.ivaP || 0) / 100);
-                        
                         netoConDesc += baseConDesc;
                         ivaConDesc += baseConDesc * ((it.ivaP || 0) / 100);
                     }
@@ -239,15 +241,6 @@
                 <hr><h2 style="margin:10px 0;">TOTAL: $ ${fM(netoSinDesc + ivaSinDesc)}</h2>
             </div>`;
     }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && e.target.classList.contains('nav')) {
-            const inputs = Array.from(document.querySelectorAll('.nav')).filter(i => i.offsetParent !== null);
-            const idx = inputs.indexOf(e.target);
-            if (idx < inputs.length - 1) { e.preventDefault(); inputs[idx + 1].focus(); }
-            else { e.preventDefault(); guardar(); }
-        }
-    });
 
     function prepararEdicion() {
         const id = parseInt(document.querySelector('.chk:checked').dataset.id);
@@ -278,7 +271,6 @@
     function eliminarSeleccionados() { if(confirm("¿Borrar seleccionados?")) { const ids = Array.from(document.querySelectorAll('.chk:checked')).map(c => parseInt(c.dataset.id)); db.camiones[tIdx].items = db.camiones[tIdx].items.filter(it => !ids.includes(it.id)); dbRef.set(db); } }
     function eliminarChofer(e, i) { e.stopPropagation(); if(confirm("¿Borrar chofer?")) { db.camiones.splice(i, 1); tIdx = null; dbRef.set(db); } }
     function verResumenGlobal() { tIdx = null; document.getElementById('mainGestion').style.display = 'none'; document.getElementById('panelDerecho').style.display = 'none'; document.getElementById('resumenSeccion').style.display = 'block'; }
-
     function actualizarTotales() {
         const seleccionados = document.querySelectorAll('.chk:checked');
         let vT = 0, gT = 0; seleccionados.forEach(x => { vT += parseFloat(x.dataset.neto); gT += parseFloat(x.dataset.gasto); });
@@ -329,15 +321,7 @@
                     <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;"><span>SALDO FINAL:</span> <span>${sT}</span></div>
                 </div>
             </div>`;
-        
-        const opt = {
-            margin: 5,
-            filename: `Liq_${chofer}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak: { mode: 'avoid-all' }
-        };
+        const opt = { margin: 5, filename: `Liq_${chofer}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
         html2pdf().set(opt).from(element).save();
     }
 </script>
